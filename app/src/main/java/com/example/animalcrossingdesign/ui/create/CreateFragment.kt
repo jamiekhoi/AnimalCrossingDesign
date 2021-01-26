@@ -18,15 +18,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.animalcrossingdesign.R
-
+import android.widget.SimpleAdapter
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class CreateFragment : Fragment() {
+
 
     private lateinit var createViewModel: CreateViewModel
 
     lateinit var imageView: ImageView
     lateinit var button: Button
     private lateinit var crop_switch: Switch
+    private lateinit var adapter: SimpleAdapter
 
     private val PICK_IMAGE = 100
     private val CROP_IMAGE = 101
@@ -50,8 +55,23 @@ class CreateFragment : Fragment() {
 
         val createDesignButton: Button = root.findViewById(R.id.button)
         createDesignButton.setOnClickListener {
+
+            // Pick image
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, PICK_IMAGE)
+
+            // Crop image
+            if(crop_switch.isChecked){
+                imageUri?.let { performCrop(it) }
+                Toast.makeText(activity, "Cropping!", Toast.LENGTH_SHORT).show()
+
+            }else{
+                Toast.makeText(activity, "Not cropping!", Toast.LENGTH_SHORT).show()
+
+            }
+
+            // Split image up
+            splitImage()
         }
 
         // Connect the imageview
@@ -59,6 +79,51 @@ class CreateFragment : Fragment() {
 
         // Connect the crop_switch
         crop_switch = root.findViewById(R.id.crop_switch)
+
+        // Create adapter for
+        // val split_images: MutableList<Bitmap> = arrayListOf()
+        // mutableListOf("one", "two", "three", "four")
+        val split_images_hashmap=ArrayList<HashMap<String,Any>>()
+
+        val animalNames = arrayOf("Lion","Tiger","Monkey","Dog","Cat","Elephant")
+        val animalImages = listOf(R.drawable.nh_dizzy_poster,
+                R.drawable.nh_dizzy_poster,
+                R.drawable.nh_dizzy_poster,
+                R.drawable.nh_dizzy_poster,
+                R.drawable.nh_dizzy_poster,
+                R.drawable.nh_dizzy_poster)
+
+        for(i in animalNames.indices){
+            val map=HashMap<String,Any>()
+
+            // Data entry in HashMap
+            map["name"] = animalNames[i]
+            map["image"]=animalImages[i]
+
+            // adding the HashMap to the ArrayList
+            split_images_hashmap.add(map)
+        }
+
+        val from = arrayOf("name", "image")
+        val to = intArrayOf(R.id.textViewGrid, R.id.imageViewGrid)
+        adapter = SimpleAdapter(root.context, split_images_hashmap, R.layout.image_grid_view, from, to)
+
+        val recycleview: RecyclerView = root.findViewById(R.id.recyclerView)
+
+        //val customadapter = CustomAdapter(animalNames)
+        //recycleview.adapter = customadapter
+        //gridview.adapter = adapter
+
+
+        // Creates a vertical Layout Manager
+        //recycleview.layoutManager = LinearLayoutManager(root.context)
+
+        // You can use GridLayoutManager if you want multiple columns. Enter the number of columns as a parameter.
+        recycleview.layoutManager = GridLayoutManager(root.context, 3)
+
+        // Access the RecyclerView Adapter and load the data into it
+        recycleview.adapter = CustomAdapter(animalNames)
+
 
         return root
     }
@@ -99,16 +164,19 @@ class CreateFragment : Fragment() {
         println(bitmap.height)
 
 
-        val chuck_size: Int = bitmap.height/split_amount
+        val x_chuck_size: Int = bitmap.width/split_amount
+        val y_chuck_size: Int = bitmap.height/split_amount
 
         val split_images: MutableList<Bitmap> = arrayListOf()
 
         for(y in 0 until split_amount){
             for(x in 0 until split_amount){
-                split_images.add(Bitmap.createBitmap(bitmap, x*chuck_size, y*chuck_size, chuck_size, chuck_size))
+                split_images.add(Bitmap.createBitmap(bitmap, x*x_chuck_size, y*y_chuck_size, x_chuck_size, y_chuck_size))
             }
         }
         imageView.setImageBitmap(split_images.get(0))
+
+
 
 
     }
@@ -120,15 +188,7 @@ class CreateFragment : Fragment() {
                 println(data)
                 imageUri = data?.data
 
-                // Crop image
-                if(crop_switch.isChecked){
-                    imageUri?.let { performCrop(it) }
-                    Toast.makeText(activity, "Cropping!", Toast.LENGTH_SHORT).show()
 
-                }else{
-                    Toast.makeText(activity, "Not cropping!", Toast.LENGTH_SHORT).show()
-
-                }
 
                 //imageView.setImageURI(imageUri)
                 println("BEORFEFJDSOFIDJSOAIFDJSOIJFOIS")
@@ -159,7 +219,7 @@ class CreateFragment : Fragment() {
                     }
                 }
 
-                splitImage()
+
 
 
             }

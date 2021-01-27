@@ -19,12 +19,12 @@ class CustomAdapter(private val dataSet: ArrayList<HashMap<String,Any>>) :
      * (custom ViewHolder).
      */
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView
+        //val textView: TextView
         val imageView: ImageView
 
         init {
             // Define click listener for the ViewHolder's View.
-            textView = view.findViewById(R.id.textViewGrid)
+            //textView = view.findViewById(R.id.textViewGrid)
             imageView = view.findViewById(R.id.imageViewGrid)
         }
     }
@@ -43,7 +43,7 @@ class CustomAdapter(private val dataSet: ArrayList<HashMap<String,Any>>) :
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.textView.text = dataSet[position]["name"].toString()
+        //viewHolder.textView.text = dataSet[position]["name"].toString()
 
         val data = dataSet[position]["image"]
         if (data is Int){

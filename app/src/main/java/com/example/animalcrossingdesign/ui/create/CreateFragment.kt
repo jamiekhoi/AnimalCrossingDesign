@@ -18,7 +18,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.animalcrossingdesign.R
-import android.widget.SimpleAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -31,13 +30,17 @@ class CreateFragment : Fragment() {
     lateinit var imageView: ImageView
     lateinit var button: Button
     private lateinit var crop_switch: Switch
-    private lateinit var adapter: SimpleAdapter
     private lateinit var split_images_hashmap: ArrayList<HashMap<String,Any>>
+    private lateinit var textViewRowCol: TextView
+    private lateinit var recycleview: RecyclerView
+    //Todo: Is it bad to put root here instead of inside constructor?
+    private lateinit var root: View
 
     private val PICK_IMAGE = 100
     private val CROP_IMAGE = 101
 
     private var imageUri: Uri? = null
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -48,11 +51,33 @@ class CreateFragment : Fragment() {
         createViewModel =
                 ViewModelProvider(this).get(CreateViewModel::class.java)
 
-        val root = inflater.inflate(R.layout.fragment_create, container, false)
-        val textView: TextView = root.findViewById(R.id.text_create)
+        root = inflater.inflate(R.layout.fragment_create, container, false)
+        val textViewCreate: TextView = root.findViewById(R.id.text_create)
         createViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
+            textViewCreate.text = it
         })
+
+        // Connect the row/column chooser
+        textViewRowCol = root.findViewById(R.id.textViewCols)
+
+        // Create onClickListener for button
+        val minusColsButton: ImageButton = root.findViewById(R.id.minusColsButton)
+        minusColsButton.setOnClickListener {
+            val amtCols = textViewRowCol.text.toString().toInt()
+            if (amtCols > 1){
+                textViewRowCol.text = (amtCols - 1).toString()
+            }
+            update_rows_columns()
+        }
+        // Create onClickListener for button
+        val plusColsButton: ImageButton = root.findViewById(R.id.plusColsButton)
+        plusColsButton.setOnClickListener {
+            val amtCols = textViewRowCol.text.toString().toInt()
+            if (amtCols < 10){
+                textViewRowCol.text = (amtCols + 1).toString()
+            }
+            update_rows_columns()
+        }
 
         // Create onClickListener for button
         val pickImageButton: Button = root.findViewById(R.id.pickImageButton)
@@ -61,8 +86,6 @@ class CreateFragment : Fragment() {
             // Pick image
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, PICK_IMAGE)
-
-
         }
 
         // Create onClickListener for button
@@ -108,20 +131,16 @@ class CreateFragment : Fragment() {
             map["image"]=animalImages[i]
 
             // adding the HashMap to the ArrayList
-            split_images_hashmap.add(map)
+            //split_images_hashmap.add(map)
         }
 
-        val from = arrayOf("name", "image")
-        val to = intArrayOf(R.id.textViewGrid, R.id.imageViewGrid)
-        adapter = SimpleAdapter(root.context, split_images_hashmap, R.layout.image_grid_view, from, to)
-
-        val recycleview: RecyclerView = root.findViewById(R.id.recyclerView)
-
+        recycleview = root.findViewById(R.id.recyclerView)
         // Creates a vertical Layout Manager
         //recycleview.layoutManager = LinearLayoutManager(root.context)
 
         // You can use GridLayoutManager if you want multiple columns. Enter the number of columns as a parameter.
-        recycleview.layoutManager = GridLayoutManager(root.context, 3)
+        val gridlayoutmanger = GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
+        recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
 
         // Access the RecyclerView Adapter and load the data into it
         customadapter = CustomAdapter(split_images_hashmap)
@@ -136,6 +155,13 @@ class CreateFragment : Fragment() {
         }
 
         return root
+    }
+
+    private fun update_rows_columns(){
+        val amtCols = textViewRowCol.text.toString().toInt()
+        val gridlayoutmanger = GridLayoutManager(root.context, amtCols)
+        recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
+        splitImage()
     }
 
     private fun addpicstest() {
@@ -189,8 +215,11 @@ class CreateFragment : Fragment() {
         }
     }
 
-    private fun splitImage(split_amount: Int = 3) {
+    private fun splitImage() {
 
+        // Empty images already loaded
+        split_images_hashmap.clear()
+        val split_amount: Int = textViewRowCol.text.toString().toInt()
         // Getting the scaled bitmap of the source image
         val bitmap = imageView.drawable.toBitmap()
         println(bitmap.height)
@@ -207,7 +236,7 @@ class CreateFragment : Fragment() {
             }
         }
 
-        imageView.setImageBitmap(split_images.get(0))
+        //imageView.setImageBitmap(split_images.get(0))
         for(i in split_images.indices){
             val map=HashMap<String,Any>()
 

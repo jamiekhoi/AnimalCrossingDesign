@@ -41,7 +41,7 @@
                 android:layout_marginBottom="32dp"
                 android:textAlignment="center"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/button"
+                app:layout_constraintBottom_toTopOf="@+id/pickImageButton"
                 tools:layout_editor_absoluteX="27dp" />
 
 
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <Button
-                    android:id="@+id/button"
+                    android:id="@+id/pickImageButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="24dp"
@@ -63,45 +63,28 @@
                     android:id="@+id/crop_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
                     android:text="Crop"
-                    app:layout_constraintBottom_toBottomOf="@+id/button"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/button"
+                    app:layout_constraintBottom_toBottomOf="@+id/pickImageButton"
+                    app:layout_constraintStart_toEndOf="@+id/pickImageButton"
                     tools:checked="true" />
+
+                <Button
+                    android:id="@+id/splitImageButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Split Image"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/crop_switch"
+                    app:layout_constraintTop_toTopOf="@+id/pickImageButton" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <ImageView
-                android:adjustViewBounds="true"
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:src="@drawable/androidparty"
-                app:layout_constraintTop_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="3"
-                android:rowCount="3">
+                >
 
             </androidx.recyclerview.widget.RecyclerView>
-
-            <TextView
-                android:id="@+id/hello"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
-                android:text="Hello there"
-                android:textAlignment="center"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/recyclerView"
-                tools:layout_editor_absoluteX="27dp" />
 
 
         </LinearLayout>

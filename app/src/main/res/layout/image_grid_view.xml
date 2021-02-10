@@ -7,10 +7,10 @@
     android:layout_height="wrap_content">
 
     <ImageView
+        android:adjustViewBounds="true"
         android:id="@+id/imageViewGrid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="false"
         android:padding="3dp"
         android:src="@drawable/ic_home"
         app:layout_constraintStart_toStartOf="parent"

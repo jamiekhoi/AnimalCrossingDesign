@@ -47,37 +47,54 @@
 
 
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
                 <Button
                     android:id="@+id/pickImageButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginBottom="128dp"
-                    android:text="Pick Image"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:text="Pick Image" />
 
                 <Switch
                     android:id="@+id/crop_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Crop"
-                    app:layout_constraintBottom_toBottomOf="@+id/pickImageButton"
-                    app:layout_constraintStart_toEndOf="@+id/pickImageButton"
                     tools:checked="true" />
 
                 <Button
                     android:id="@+id/splitImageButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Split Image"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/crop_switch"
-                    app:layout_constraintTop_toTopOf="@+id/pickImageButton" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    android:text="Split Image"/>
+
+                <Button
+                    android:id="@+id/cropButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Crop" />
+
+                <Button
+                    android:id="@+id/downscaleButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Downscale" />
+
+                <Button
+                    android:id="@+id/changeColorButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Convert to animal crossing colors rgb" />
+
+                <Button
+                    android:id="@+id/changeColorButton2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Convert to animal crossing colors contrast" />
+            </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

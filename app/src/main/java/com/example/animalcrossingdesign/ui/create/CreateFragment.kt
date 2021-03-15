@@ -17,6 +17,7 @@ import android.widget.*
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.get
 import androidx.core.graphics.scale
+import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -31,9 +32,8 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import java.lang.Exception
-import java.lang.Integer.parseInt
-import java.lang.Long.parseLong
-import kotlin.experimental.and
+import com.example.animalcrossingdesign.AnimalCrossingColors
+import kotlin.math.pow
 
 
 class CreateFragment : Fragment() {
@@ -56,7 +56,11 @@ class CreateFragment : Fragment() {
 
     private var imageUri: Uri? = null
 
-    val animalCrossingPaletteColors = mutableMapOf<Byte, Int>()
+    // Todo: remove other instances of hardcoded 32
+    private val animalCrossingDesignWidth = 32
+    private val animalCrossingDesignHeight = 32
+
+    private val animalCrossingPaletteColors = AnimalCrossingColors().animalCrossingPaletteColors
 
 
     override fun onCreateView(
@@ -64,184 +68,6 @@ class CreateFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-
-
-        animalCrossingPaletteColors[0x00.toByte()] = 0xffffefff.toInt()
-        animalCrossingPaletteColors[0x01.toByte()] = 0xffff9aad.toInt()
-        animalCrossingPaletteColors[0x02.toByte()] = 0xffef559c.toInt()
-        animalCrossingPaletteColors[0x03.toByte()] = 0xffff65ad.toInt()
-        animalCrossingPaletteColors[0x04.toByte()] = 0xffff0063.toInt()
-        animalCrossingPaletteColors[0x05.toByte()] = 0xffbd4573.toInt()
-        animalCrossingPaletteColors[0x06.toByte()] = 0xffce0052.toInt()
-        animalCrossingPaletteColors[0x07.toByte()] = 0xff9c0031.toInt()
-        animalCrossingPaletteColors[0x08.toByte()] = 0xff522031.toInt()
-
-        animalCrossingPaletteColors[0x10.toByte()] = 0xffffbace.toInt()
-        animalCrossingPaletteColors[0x11.toByte()] = 0xffff7573.toInt()
-        animalCrossingPaletteColors[0x12.toByte()] = 0xffde3010.toInt()
-        animalCrossingPaletteColors[0x13.toByte()] = 0xffff5542.toInt()
-        animalCrossingPaletteColors[0x14.toByte()] = 0xffff0000.toInt()
-        animalCrossingPaletteColors[0x15.toByte()] = 0xffce6563.toInt()
-        animalCrossingPaletteColors[0x16.toByte()] = 0xffbd4542.toInt()
-        animalCrossingPaletteColors[0x17.toByte()] = 0xffbd0000.toInt()
-        animalCrossingPaletteColors[0x18.toByte()] = 0xff8c2021.toInt()
-
-        animalCrossingPaletteColors[0x20.toByte()] = 0xffdecfbd.toInt()
-        animalCrossingPaletteColors[0x21.toByte()] = 0xffffcf63.toInt()
-        animalCrossingPaletteColors[0x22.toByte()] = 0xffde6521.toInt()
-        animalCrossingPaletteColors[0x23.toByte()] = 0xffffaa21.toInt()
-        animalCrossingPaletteColors[0x24.toByte()] = 0xffff6500.toInt()
-        animalCrossingPaletteColors[0x25.toByte()] = 0xffbd8a52.toInt()
-        animalCrossingPaletteColors[0x26.toByte()] = 0xffde4500.toInt()
-        animalCrossingPaletteColors[0x27.toByte()] = 0xffbd4500.toInt()
-        animalCrossingPaletteColors[0x28.toByte()] = 0xff633010.toInt()
-
-        animalCrossingPaletteColors[0x30.toByte()] = 0xffffefde.toInt()
-        animalCrossingPaletteColors[0x31.toByte()] = 0xffffdfce.toInt()
-        animalCrossingPaletteColors[0x32.toByte()] = 0xffffcfad.toInt()
-        animalCrossingPaletteColors[0x33.toByte()] = 0xffffba8c.toInt()
-        animalCrossingPaletteColors[0x34.toByte()] = 0xffffaa8c.toInt()
-        animalCrossingPaletteColors[0x35.toByte()] = 0xffde8a63.toInt()
-        animalCrossingPaletteColors[0x36.toByte()] = 0xffbd6542.toInt()
-        animalCrossingPaletteColors[0x37.toByte()] = 0xff9c5531.toInt()
-        animalCrossingPaletteColors[0x38.toByte()] = 0xff8c4521.toInt()
-
-        animalCrossingPaletteColors[0x40.toByte()] = 0xffffcfff.toInt()
-        animalCrossingPaletteColors[0x41.toByte()] = 0xffef8aff.toInt()
-        animalCrossingPaletteColors[0x42.toByte()] = 0xffce65de.toInt()
-        animalCrossingPaletteColors[0x43.toByte()] = 0xffbd8ace.toInt()
-        animalCrossingPaletteColors[0x44.toByte()] = 0xffce00ff.toInt()
-        animalCrossingPaletteColors[0x45.toByte()] = 0xff9c659c.toInt()
-        animalCrossingPaletteColors[0x46.toByte()] = 0xff8c00ad.toInt()
-        animalCrossingPaletteColors[0x47.toByte()] = 0xff520073.toInt()
-        animalCrossingPaletteColors[0x48.toByte()] = 0xff310042.toInt()
-
-        animalCrossingPaletteColors[0x50.toByte()] = 0xffffbaff.toInt()
-        animalCrossingPaletteColors[0x51.toByte()] = 0xffff9aff.toInt()
-        animalCrossingPaletteColors[0x52.toByte()] = 0xffde20bd.toInt()
-        animalCrossingPaletteColors[0x53.toByte()] = 0xffff55ef.toInt()
-        animalCrossingPaletteColors[0x54.toByte()] = 0xffff00ce.toInt()
-        animalCrossingPaletteColors[0x55.toByte()] = 0xff8c5573.toInt()
-        animalCrossingPaletteColors[0x56.toByte()] = 0xffbd009c.toInt()
-        animalCrossingPaletteColors[0x57.toByte()] = 0xff8c0063.toInt()
-        animalCrossingPaletteColors[0x58.toByte()] = 0xff520042.toInt()
-
-        animalCrossingPaletteColors[0x60.toByte()] = 0xffdeba9c.toInt()
-        animalCrossingPaletteColors[0x61.toByte()] = 0xffceaa73.toInt()
-        animalCrossingPaletteColors[0x62.toByte()] = 0xff734531.toInt()
-        animalCrossingPaletteColors[0x63.toByte()] = 0xffad7542.toInt()
-        animalCrossingPaletteColors[0x64.toByte()] = 0xff9c3000.toInt()
-        animalCrossingPaletteColors[0x65.toByte()] = 0xff733021.toInt()
-        animalCrossingPaletteColors[0x66.toByte()] = 0xff522000.toInt()
-        animalCrossingPaletteColors[0x67.toByte()] = 0xff311000.toInt()
-        animalCrossingPaletteColors[0x68.toByte()] = 0xff211000.toInt()
-
-        animalCrossingPaletteColors[0x70.toByte()] = 0xffffffce.toInt()
-        animalCrossingPaletteColors[0x71.toByte()] = 0xffffff73.toInt()
-        animalCrossingPaletteColors[0x72.toByte()] = 0xffdedf21.toInt()
-        animalCrossingPaletteColors[0x73.toByte()] = 0xffffff00.toInt()
-        animalCrossingPaletteColors[0x74.toByte()] = 0xffffdf00.toInt()
-        animalCrossingPaletteColors[0x75.toByte()] = 0xffceaa00.toInt()
-        animalCrossingPaletteColors[0x76.toByte()] = 0xff9c9a00.toInt()
-        animalCrossingPaletteColors[0x77.toByte()] = 0xff8c7500.toInt()
-        animalCrossingPaletteColors[0x78.toByte()] = 0xff525500.toInt()
-
-        animalCrossingPaletteColors[0x80.toByte()] = 0xffdebaff.toInt()
-        animalCrossingPaletteColors[0x81.toByte()] = 0xffbd9aef.toInt()
-        animalCrossingPaletteColors[0x82.toByte()] = 0xff6330ce.toInt()
-        animalCrossingPaletteColors[0x83.toByte()] = 0xff9c55ff.toInt()
-        animalCrossingPaletteColors[0x84.toByte()] = 0xff6300ff.toInt()
-        animalCrossingPaletteColors[0x85.toByte()] = 0xff52458c.toInt()
-        animalCrossingPaletteColors[0x86.toByte()] = 0xff42009c.toInt()
-        animalCrossingPaletteColors[0x87.toByte()] = 0xff210063.toInt()
-        animalCrossingPaletteColors[0x88.toByte()] = 0xff211031.toInt()
-
-        animalCrossingPaletteColors[0x90.toByte()] = 0xffbdbaff.toInt()
-        animalCrossingPaletteColors[0x91.toByte()] = 0xff8c9aff.toInt()
-        animalCrossingPaletteColors[0x92.toByte()] = 0xff3130ad.toInt()
-        animalCrossingPaletteColors[0x93.toByte()] = 0xff3155ef.toInt()
-        animalCrossingPaletteColors[0x94.toByte()] = 0xff0000ff.toInt()
-        animalCrossingPaletteColors[0x95.toByte()] = 0xff31308c.toInt()
-        animalCrossingPaletteColors[0x96.toByte()] = 0xff0000ad.toInt()
-        animalCrossingPaletteColors[0x97.toByte()] = 0xff101063.toInt()
-        animalCrossingPaletteColors[0x98.toByte()] = 0xff000021.toInt()
-
-        animalCrossingPaletteColors[0xa0.toByte()] = 0xff9cefbd.toInt()
-        animalCrossingPaletteColors[0xa1.toByte()] = 0xff63cf73.toInt()
-        animalCrossingPaletteColors[0xa2.toByte()] = 0xff216510.toInt()
-        animalCrossingPaletteColors[0xa3.toByte()] = 0xff42aa31.toInt()
-        animalCrossingPaletteColors[0xa4.toByte()] = 0xff008a31.toInt()
-        animalCrossingPaletteColors[0xa5.toByte()] = 0xff527552.toInt()
-        animalCrossingPaletteColors[0xa6.toByte()] = 0xff215500.toInt()
-        animalCrossingPaletteColors[0xa7.toByte()] = 0xff103021.toInt()
-        animalCrossingPaletteColors[0xa8.toByte()] = 0xff002010.toInt()
-
-        animalCrossingPaletteColors[0xb0.toByte()] = 0xffdeffbd.toInt()
-        animalCrossingPaletteColors[0xb1.toByte()] = 0xffceff8c.toInt()
-        animalCrossingPaletteColors[0xb2.toByte()] = 0xff8caa52.toInt()
-        animalCrossingPaletteColors[0xb3.toByte()] = 0xffaddf8c.toInt()
-        animalCrossingPaletteColors[0xb4.toByte()] = 0xff8cff00.toInt()
-        animalCrossingPaletteColors[0xb5.toByte()] = 0xffadba9c.toInt()
-        animalCrossingPaletteColors[0xb6.toByte()] = 0xff63ba00.toInt()
-        animalCrossingPaletteColors[0xb7.toByte()] = 0xff529a00.toInt()
-        animalCrossingPaletteColors[0xb8.toByte()] = 0xff316500.toInt()
-
-        animalCrossingPaletteColors[0xc0.toByte()] = 0xffbddfff.toInt()
-        animalCrossingPaletteColors[0xc1.toByte()] = 0xff73cfff.toInt()
-        animalCrossingPaletteColors[0xc2.toByte()] = 0xff31559c.toInt()
-        animalCrossingPaletteColors[0xc3.toByte()] = 0xff639aff.toInt()
-        animalCrossingPaletteColors[0xc4.toByte()] = 0xff1075ff.toInt()
-        animalCrossingPaletteColors[0xc5.toByte()] = 0xff4275ad.toInt()
-        animalCrossingPaletteColors[0xc6.toByte()] = 0xff214573.toInt()
-        animalCrossingPaletteColors[0xc7.toByte()] = 0xff002073.toInt()
-        animalCrossingPaletteColors[0xc8.toByte()] = 0xff001042.toInt()
-
-        animalCrossingPaletteColors[0xd0.toByte()] = 0xffadffff.toInt()
-        animalCrossingPaletteColors[0xd1.toByte()] = 0xff52ffff.toInt()
-        animalCrossingPaletteColors[0xd2.toByte()] = 0xff008abd.toInt()
-        animalCrossingPaletteColors[0xd3.toByte()] = 0xff52bace.toInt()
-        animalCrossingPaletteColors[0xd4.toByte()] = 0xff00cfff.toInt()
-        animalCrossingPaletteColors[0xd5.toByte()] = 0xff429aad.toInt()
-        animalCrossingPaletteColors[0xd6.toByte()] = 0xff00658c.toInt()
-        animalCrossingPaletteColors[0xd7.toByte()] = 0xff004552.toInt()
-        animalCrossingPaletteColors[0xd8.toByte()] = 0xff002031.toInt()
-
-        animalCrossingPaletteColors[0xe0.toByte()] = 0xffceffef.toInt()
-        animalCrossingPaletteColors[0xe1.toByte()] = 0xffadefde.toInt()
-        animalCrossingPaletteColors[0xe2.toByte()] = 0xff31cfad.toInt()
-        animalCrossingPaletteColors[0xe3.toByte()] = 0xff52efbd.toInt()
-        animalCrossingPaletteColors[0xe4.toByte()] = 0xff00ffce.toInt()
-        animalCrossingPaletteColors[0xe5.toByte()] = 0xff73aaad.toInt()
-        animalCrossingPaletteColors[0xe6.toByte()] = 0xff00aa9c.toInt()
-        animalCrossingPaletteColors[0xe7.toByte()] = 0xff008a73.toInt()
-        animalCrossingPaletteColors[0xe8.toByte()] = 0xff004531.toInt()
-
-        animalCrossingPaletteColors[0xf0.toByte()] = 0xffadffad.toInt()
-        animalCrossingPaletteColors[0xf1.toByte()] = 0xff73ff73.toInt()
-        animalCrossingPaletteColors[0xf2.toByte()] = 0xff63df42.toInt()
-        animalCrossingPaletteColors[0xf3.toByte()] = 0xff00ff00.toInt()
-        animalCrossingPaletteColors[0xf4.toByte()] = 0xff21df21.toInt()
-        animalCrossingPaletteColors[0xf5.toByte()] = 0xff52ba52.toInt()
-        animalCrossingPaletteColors[0xf6.toByte()] = 0xff00ba00.toInt()
-        animalCrossingPaletteColors[0xf7.toByte()] = 0xff008a00.toInt()
-        animalCrossingPaletteColors[0xf8.toByte()] = 0xff214521.toInt()
-
-        animalCrossingPaletteColors[0x0f.toByte()] = 0xffffffff.toInt()
-        animalCrossingPaletteColors[0x1f.toByte()] = 0xffefefef.toInt()
-        animalCrossingPaletteColors[0x2f.toByte()] = 0xffdedfde.toInt()
-        animalCrossingPaletteColors[0x3f.toByte()] = 0xffcecfce.toInt()
-        animalCrossingPaletteColors[0x4f.toByte()] = 0xffbdbabd.toInt()
-        animalCrossingPaletteColors[0x5f.toByte()] = 0xffadaaad.toInt()
-        animalCrossingPaletteColors[0x6f.toByte()] = 0xff9c9a9c.toInt()
-        animalCrossingPaletteColors[0x7f.toByte()] = 0xff8c8a8c.toInt()
-        animalCrossingPaletteColors[0x8f.toByte()] = 0xff737573.toInt()
-        animalCrossingPaletteColors[0x9f.toByte()] = 0xff636563.toInt()
-        animalCrossingPaletteColors[0xaf.toByte()] = 0xff525552.toInt()
-        animalCrossingPaletteColors[0xbf.toByte()] = 0xff424542.toInt()
-        animalCrossingPaletteColors[0xcf.toByte()] = 0xff313031.toInt()
-        animalCrossingPaletteColors[0xdf.toByte()] = 0xff212021.toInt()
-        animalCrossingPaletteColors[0xef.toByte()] = 0xff000000.toInt()
-
 
         createViewModel =
                 ViewModelProvider(this).get(CreateViewModel::class.java)
@@ -254,7 +80,6 @@ class CreateFragment : Fragment() {
 
         // Connect the row/column chooser
         textViewRowCol = root.findViewById(R.id.textViewCols)
-
         // Create onClickListener for button
         val minusColsButton: ImageButton = root.findViewById(R.id.minusColsButton)
         minusColsButton.setOnClickListener {
@@ -274,27 +99,53 @@ class CreateFragment : Fragment() {
             update_rows_columns()
         }
 
-        // Create onClickListener for button
+        // Create onClickListener for button to choose image
         val pickImageButton: Button = root.findViewById(R.id.pickImageButton)
         pickImageButton.setOnClickListener {
-
             // Pick image
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, PICK_IMAGE)
         }
 
-        // Create onClickListener for button
+        // Create onClickListener for button to splitimage
         val splitImageButton: Button = root.findViewById(R.id.splitImageButton)
         splitImageButton.setOnClickListener {
-
-            // Pick image
-            //val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            //startActivityForResult(gallery, PICK_IMAGE)
-
             Toast.makeText(activity, "Splitting image!", Toast.LENGTH_SHORT).show()
-
             // Split image up
             splitImage()
+        }
+
+        // Create onClickListener for button to crop image
+        val cropButton: Button = root.findViewById(R.id.cropButton)
+        cropButton.setOnClickListener {
+            // Crop image from imageview
+            imageUri?.let { it1 -> performCrop(it1) }
+        }
+
+        // Create onClickListener for button to downscale image
+        val downscaleButton: Button = root.findViewById(R.id.downscaleButton)
+        downscaleButton.setOnClickListener {
+            // Downscale image from imageview
+            imageView.setImageBitmap(Bitmap.createScaledBitmap(imageView.drawable.toBitmap(),
+                    animalCrossingDesignWidth,
+                    animalCrossingDesignHeight,
+                    true))
+        }
+
+        // Create onClickListener for button to convert to animal crossing colors
+        val changeColorButton: Button = root.findViewById(R.id.changeColorButton)
+        changeColorButton.setOnClickListener {
+            // Change colors to animal crossing colors
+            val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
+            imageView.setImageBitmap(convertedbmp)
+        }
+
+        // Create onClickListener for button to convert to animal crossing colors
+        val changeColorButton2: Button = root.findViewById(R.id.changeColorButton2)
+        changeColorButton2.setOnClickListener {
+            // Change colors to animal crossing colors
+            val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "contrast")
+            imageView.setImageBitmap(convertedbmp)
         }
 
         // Connect the imageview
@@ -306,33 +157,12 @@ class CreateFragment : Fragment() {
         // Create adapter for
         // val split_images: MutableList<Bitmap> = arrayListOf()
         // mutableListOf("one", "two", "three", "four")
-        split_images_hashmap=ArrayList<HashMap<String, Any>>()
+        split_images_hashmap = ArrayList<HashMap<String, Any>>()
 
-        var animalNames = arrayOf("Lion", "Tiger", "Monkey", "Dog", "Cat", "Elephant")
-        animalNames = arrayOf("1", "1", "1", "1", "1", "1")
-
-        val animalImages = listOf(R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster)
-
-        for(i in animalNames.indices){
-            val map=HashMap<String, Any>()
-
-            // Data entry in HashMap
-            map["name"] = animalNames[i]
-            map["image"]=animalImages[i]
-
-            // adding the HashMap to the ArrayList
-            //split_images_hashmap.add(map)
-        }
 
         recycleview = root.findViewById(R.id.recyclerView)
         // Creates a vertical Layout Manager
         //recycleview.layoutManager = LinearLayoutManager(root.context)
-
         // You can use GridLayoutManager if you want multiple columns. Enter the number of columns as a parameter.
         val gridlayoutmanger = GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
         recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
@@ -429,10 +259,12 @@ class CreateFragment : Fragment() {
 
             // rescale image
             val tempimg = imageView.drawable.toBitmap()
-            val tempbmp = tempimg.scale(32, 32)
+            val tempbmp = tempimg.scale(animalCrossingDesignWidth, animalCrossingDesignHeight)
             imageView.setImageBitmap(tempbmp)
 
             // change color palette
+            val convertedbmp = convertBitmapToFitACPalette(tempbmp)
+            imageView.setImageBitmap(convertedbmp)
             tempbmp
 
         }
@@ -501,6 +333,86 @@ class CreateFragment : Fragment() {
         return arrayListOfPixels
     }
 
+    private fun getContrastRatio(color1: Color, color2: Color): Double {
+        val relativeLuminance1 = (
+                (0.2126 * color1.red()) +
+                        (0.7152 * color1.green()) +
+                        (0.0722 * color1.blue())
+                )
+        val relativeLuminance2 = (
+                (0.2126 * color2.red()) + (0.7152 * color2.green()) + (0.0722 * color2.blue()))
+
+        val contrastRatio: Double
+        // Todo: check if this is correct
+        contrastRatio = if (relativeLuminance1 > relativeLuminance2) {
+            (relativeLuminance1 + 0.0005)/(relativeLuminance2 + 0.0005)
+        }else {
+            (relativeLuminance2 + 0.0005)/(relativeLuminance1 + 0.0005)
+        }
+
+        return contrastRatio
+    }
+
+    private fun getEuclideanSRGBDistance(color1: Color, color2: Color): Double {
+        val redWeight = 0.3
+        val greenWeight = 0.59
+        val blueWeight = 0.11
+
+        return (
+                ((color2.red() - color1.red()) * redWeight).pow(2) +
+                ((color2.green() - color1.green()) * greenWeight).pow(2) +
+                ((color2.blue() - color1.blue()) * blueWeight).pow(2)).toDouble()
+    }
+
+    private fun getClosestColor(color: Color, method: (Color, Color) -> Double): Color {
+        val acColors = animalCrossingPaletteColors.values
+
+        var minDistance: Double = Double.MAX_VALUE
+        var minDistanceColor: Color = color
+
+        val distanceList = ArrayList<ArrayList<Any>>()
+
+        for (colorCode in acColors) {
+            val acColor = colorCode.toInt().toColor()
+            //val distance = getContrastRatio(color, acColor)
+            //val distance = getEuclideanSRGBDistance(color, acColor)
+            val distance = method(color, acColor)
+
+            distanceList.add(arrayListOf(acColor, distance))
+            // What should happen if same distance?
+            if (distance < minDistance) {
+                minDistance = distance
+                minDistanceColor = acColor
+            }
+        }
+        return minDistanceColor
+    }
+
+    private fun convertBitmapToFitACPalette(bitmap: Bitmap, method: String = "rgb"): Bitmap{
+        val recoloredBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val arrayListOfImageColors = ArrayList<Color>()
+        val arrayListOfConvertColors = ArrayList<Color>()
+
+        for (y in 0 until bitmap.height) {
+            for (x in 0 until bitmap.width){
+                val pixel = bitmap.getPixel(x, y)
+                val pixelColor = pixel.toColor()
+                val closestColor: Color = if (method == "rgb") {
+                    getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                } else if (method == "contrast") {
+                    getClosestColor(pixelColor, ::getContrastRatio)
+                }else {
+                    Toast.makeText(activity, "Color distance method not found. Using Euclidean sRGB Distance", Toast.LENGTH_LONG).show()
+                    getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                }
+
+                arrayListOfImageColors.add(pixelColor)
+                arrayListOfConvertColors.add(closestColor)
+                recoloredBitmap.setPixel(x, y, closestColor.toArgb())
+            }
+        }
+        return recoloredBitmap
+    }
 
     private fun generateQRCode(text: String): Bitmap {
         val width = 500

@@ -364,13 +364,13 @@ class CreateFragment : Fragment() {
                 ((color2.blue() - color1.blue()) * blueWeight).pow(2)).toDouble()
     }
 
-    private fun getClosestColor(color: Color, method: (Color, Color) -> Double): Color {
+    private fun getClosestColor(color: Color, method: (Color, Color) -> Double): Pair<Color, HashMap<Color, Double>> {
         val acColors = animalCrossingPaletteColors.values
 
         var minDistance: Double = Double.MAX_VALUE
         var minDistanceColor: Color = color
 
-        val distanceList = ArrayList<ArrayList<Any>>()
+        val distanceList = HashMap<Color, Double>()
 
         for (colorCode in acColors) {
             val acColor = colorCode.toInt().toColor()
@@ -378,14 +378,14 @@ class CreateFragment : Fragment() {
             //val distance = getEuclideanSRGBDistance(color, acColor)
             val distance = method(color, acColor)
 
-            distanceList.add(arrayListOf(acColor, distance))
+            distanceList[acColor] = distance
             // What should happen if same distance?
             if (distance < minDistance) {
                 minDistance = distance
                 minDistanceColor = acColor
             }
         }
-        return minDistanceColor
+        return Pair(minDistanceColor, distanceList)
     }
 
     private fun convertBitmapToFitACPalette(bitmap: Bitmap, method: String = "rgb"): Bitmap{
@@ -393,25 +393,97 @@ class CreateFragment : Fragment() {
         val arrayListOfImageColors = ArrayList<Color>()
         val arrayListOfConvertColors = ArrayList<Color>()
 
+        // Todo
+        // Add up total distances PER color in AC color palette and choose the 15 highest?/lowest?
+        // <Color of pixel in image, <Color from AC palette, distance between them>>
+        val colorDistanceMapOfMap = HashMap<Color, HashMap<Color, Double>>()
+
+        // make array of already calculated distances for ACcolors and check against to reduce calculations
+        val colorDistanceMap =  HashMap<Color, Color>()
+        var found = 0
+        var notfound = 0
+
         for (y in 0 until bitmap.height) {
             for (x in 0 until bitmap.width){
                 val pixel = bitmap.getPixel(x, y)
                 val pixelColor = pixel.toColor()
-                val closestColor: Color = if (method == "rgb") {
-                    getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
-                } else if (method == "contrast") {
-                    getClosestColor(pixelColor, ::getContrastRatio)
+                arrayListOfImageColors.add(pixelColor)
+
+                // Todo clean this up
+                var closestColor: Color = pixelColor // temp value
+
+                if (colorDistanceMap.containsKey(pixelColor)) {
+                    found++
+                    closestColor = colorDistanceMap[pixelColor]!! // maybe not needed?
                 }else {
-                    Toast.makeText(activity, "Color distance method not found. Using Euclidean sRGB Distance", Toast.LENGTH_LONG).show()
-                    getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                    notfound++
+                    when (method) {
+                        "rgb" -> {
+                            val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                            closestColor = closestColorInfo.first
+                            val distanceListForThisPixel = closestColorInfo.second
+                            colorDistanceMapOfMap[pixelColor] = distanceListForThisPixel
+                            colorDistanceMap[pixelColor] = closestColor
+                        }
+                        /*"contrast" -> {
+                            val closestColorInfo = getClosestColor(pixelColor, ::getContrastRatio)
+                            closestColor = closestColorInfo.first
+                            val distanceListForThisPixel = closestColorInfo.second
+                        }
+                        else -> {
+                            Toast.makeText(activity, "Color distance method not found. Using Euclidean sRGB Distance", Toast.LENGTH_LONG).show()
+                            val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                            closestColor = closestColorInfo.first
+                            val distanceListForThisPixel = closestColorInfo.second
+                        }*/
+                    }
                 }
 
-                arrayListOfImageColors.add(pixelColor)
-                arrayListOfConvertColors.add(closestColor)
-                recoloredBitmap.setPixel(x, y, closestColor.toArgb())
+                //arrayListOfImageColors.add(pixelColor)
+                // TODO: Check which would be faster: using setPixel per pixel or for the whole bitmap at the end
+                //arrayListOfConvertColors.add(closestColor)
+                //recoloredBitmap.setPixel(x, y, closestColor.toArgb())
             }
         }
-        return recoloredBitmap
+
+        // Is there a more effective way?
+        val test = colorDistanceMapOfMap.values
+        //test.in
+        val sumOfDifferencesForACColorPalette = HashMap<Color, Double>()
+        for (distanceMap in colorDistanceMapOfMap.values) {
+            for ((colorKey, distanceValue) in distanceMap) {
+                sumOfDifferencesForACColorPalette[colorKey] = sumOfDifferencesForACColorPalette.getOrDefault(colorKey, 0.0) + distanceValue
+            }
+        }
+        val orderedSumOfDifferencesACPalette = sumOfDifferencesForACColorPalette.entries.sortedWith(compareBy { it.value })
+        val topFifteenColors = orderedSumOfDifferencesACPalette.slice(0..14)
+
+        // Using only 15 colors from AC palette
+        val finalizedColorConversionMap =  HashMap<Color, Color>()
+
+        for ((pixelColor, distanceMap) in colorDistanceMapOfMap) {
+
+            val closestColorWithin15ColorPalette = distanceMap.filterKeys { it -> it in topFifteenColors.map { it.key } }.entries.sortedWith(compareBy { it.value })[0].key
+            finalizedColorConversionMap[pixelColor] = closestColorWithin15ColorPalette
+        }
+
+        Color()
+        val tt = arrayListOfImageColors.map { finalizedColorConversionMap[it]!!.toArgb() }
+        /*val ff = Bitmap.createBitmap(arrayListOfImageColors.map { finalizedColorConversionMap[it]. },
+                offset=0,
+                stride=bitmap.width,
+                width=bitmap.width,
+                height=bitmap.height,
+                config=Bitmap.Config.ARGB_8888)
+*/
+
+        val bf = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        bf.setPixels(tt.toList().toIntArray(), 0, bitmap.width, 0,0, bitmap.width, bitmap.height)
+
+        return bf
+
+        //recoloredBitmap.setPixels()
+        //return recoloredBitmap
     }
 
     private fun generateQRCode(text: String): Bitmap {

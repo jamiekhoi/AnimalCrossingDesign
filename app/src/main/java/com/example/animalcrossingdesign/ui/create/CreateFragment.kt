@@ -1,4 +1,4 @@
-package com.example.animalcrossingdesign.ui.create
+ package com.example.animalcrossingdesign.ui.create
 
 import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
@@ -33,12 +33,11 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import java.lang.Exception
 import com.example.animalcrossingdesign.AnimalCrossingColors
+import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import kotlin.math.pow
 
 
 class CreateFragment : Fragment() {
-
-
     private lateinit var customadapter: CustomAdapter
     private lateinit var createViewModel: CreateViewModel
 
@@ -60,8 +59,11 @@ class CreateFragment : Fragment() {
     private val animalCrossingDesignWidth = 32
     private val animalCrossingDesignHeight = 32
 
-    private val animalCrossingPaletteColors = AnimalCrossingColors().animalCrossingPaletteColors
+    private val animalCrossingPaletteColor = AnimalCrossingColors().animalCrossingPalettePositionToColorMap
+    private val animalCrossingPaletteColorToPositionMap = AnimalCrossingColors().animalCrossingPaletteColorToPositionMap
 
+    private lateinit var convertedImageColorPalettePositions: List<Byte> // as 1 Byte location based on xml file
+    private lateinit var convertedImagePixels: IntArray
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -148,6 +150,18 @@ class CreateFragment : Fragment() {
             imageView.setImageBitmap(convertedbmp)
         }
 
+        // Create onClickListener for button to create QR code
+        val createQRButton: Button = root.findViewById(R.id.createQRButton)
+        createQRButton.setOnClickListener {
+            /*val qrCodeBitmap = generateQRCode()
+            val newView = ImageView(activity)
+            newView.setImageBitmap(qrCodeBitmap)
+            val layout: LinearLayout = root.findViewById(R.id.create_fragment_list_layout)
+            layout.addView(newView)
+            imageView.setImageBitmap(qrCodeBitmap)*/
+
+        }
+
         // Connect the imageview
         imageView = root.findViewById(R.id.imageView)
 
@@ -173,89 +187,12 @@ class CreateFragment : Fragment() {
 
 
         imageView.setOnClickListener {
+
+            readQR()
+
             println("buttonpressstart")
             addpicstest()
             println("buttonpressend")
-
-            // read qr code
-            // Testing google ml kit qr code
-            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
-            val options = BarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(
-                            Barcode.FORMAT_QR_CODE,
-                            Barcode.FORMAT_AZTEC)
-                    .build()
-            val scanner = BarcodeScanning.getClient(options)
-            val result = scanner.process(image)
-                    .addOnSuccessListener { barcodes ->
-                        // Task completed successfully
-                        // ...
-                        println("nr of barcodes: ")
-                        println(barcodes.size)
-                        try {
-                            for (barcode in barcodes) {
-                                val bounds = barcode.boundingBox
-                                val corners = barcode.cornerPoints
-
-                                val rawValue = barcode.rawValue
-
-                                textViewCreate.text = barcode.rawBytes.size.toString()
-                                val qrData: ByteArray = barcode.rawBytes
-                                val title: ByteArray = qrData.sliceArray(0..41)
-                                val author: ByteArray = qrData.sliceArray(44..61)
-                                val town: ByteArray = qrData.sliceArray(66..83)
-                                val colorPalette: ByteArray = qrData.sliceArray(88..102)
-                                val data: ByteArray = qrData.sliceArray(108 until qrData.size)
-                                textViewCreate.text = data.size.toString()
-                                val titletest: String = title.joinToString(separator = "", transform = { it.toChar().toString() })
-                                val authortest: String = author.joinToString(separator = "", transform = { it.toChar().toString() })
-                                val towntest: String = town.joinToString(separator = "", transform = { it.toChar().toString() })
-                                val colortest: String = colorPalette.joinToString(separator = "", transform = { it.toChar().toString() })
-
-                                var colorarray = ""
-                                for (b in colorPalette) {
-                                    val st = String.format("%02X", b)
-                                    colorarray += " $st"
-                                    println(st)
-                                }
-
-                                var dataarray = ""
-                                for (b in data) {
-                                    val st = String.format("%02X", b)
-                                    dataarray += " $st"
-                                    println(st)
-                                }
-
-                                val pixels = getPixelColorsFromBytes(data)
-                                val qrDecodedBmp = createBitmapFromQR(pixels, colorPalette)
-
-
-                                val valueType = barcode.valueType
-
-
-
-                                // See API reference for complete list of supported types
-                                when (valueType) {
-                                    Barcode.TYPE_WIFI -> {
-                                        val ssid = barcode.wifi!!.ssid
-                                        val password = barcode.wifi!!.password
-                                        val type = barcode.wifi!!.encryptionType
-                                    }
-                                    Barcode.TYPE_URL -> {
-                                        val title = barcode.url!!.title
-                                        val url = barcode.url!!.url
-                                    }
-                                }
-                            }
-
-                        }catch (e: Exception){
-                            Toast.makeText(activity, "Could not read animal crossing qr code", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    .addOnFailureListener {
-                        // Task failed with an exception
-                        // ...
-                    }
 
             // rescale image
             val tempimg = imageView.drawable.toBitmap()
@@ -269,8 +206,34 @@ class CreateFragment : Fragment() {
 
         }
 
+        // Tesitng ZXing qr again
+        val bitmap = generateQRCodeBasic("Sample Text")
+        imageView.setImageBitmap(bitmap)
+
+        return root
+    }
+
+    fun decodeEncodeCheck() {
+        val rawBytes = readQR()
+
+        val QRObject = AnimalCrossingQRObject(rawBytes!!) // Should I be using !!?
+
+        val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
+        newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
 
 
+
+        // possible functions
+        //getPixelColorsFromBytes() (now a class function of ACQRObject)renamed to getPixelColorPositionsFromBytes
+
+        // create bitmap from rawbytes
+        //createBitmapFromQRData //deprecated
+
+        // use bitmap to recreate rawbytes/qr code
+        //generateQRCode()
+    }
+
+    fun testZXingCreateQR() {
         // Testing QR code stuff ZXing
         val height: Int = imageView.drawable.toBitmap().height//bitMatrix.getHeight()
         val width: Int = imageView.drawable.toBitmap().width//bitMatrix.getWidth()
@@ -283,21 +246,114 @@ class CreateFragment : Fragment() {
         imageView.setImageBitmap(bmp)
 
         // Tesitng ZXing qr again
-        val bitmap = generateQRCode("Sample Text")
+        val bitmap = generateQRCodeBasic("Sample Text")
         imageView.setImageBitmap(bitmap)
 
-        return root
     }
 
-    fun createBitmapFromQR(pixels: ArrayList<Int>, colorPalette: ByteArray): Bitmap {
+    fun readQR(): ByteArray? {
+        // read qr code
+        // Testing google ml kit qr code
+        val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+        val options = BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(
+                        Barcode.FORMAT_QR_CODE,
+                        Barcode.FORMAT_AZTEC)
+                .build()
+        val scanner = BarcodeScanning.getClient(options)
+        val result = scanner.process(image)
+                .addOnSuccessListener { barcodes ->
+                    // Task completed successfully
+                    // ...
+                    println("nr of barcodes: ")
+                    println(barcodes.size)
+                    try {
+                        for (barcode in barcodes) {
+                            val bounds = barcode.boundingBox
+                            val corners = barcode.cornerPoints
+
+                            val rawValue = barcode.rawValue
+
+                            //textViewCreate.text = barcode.rawBytes.size.toString()
+                            val qrData: ByteArray = barcode.rawBytes
+                            val title: ByteArray = qrData.sliceArray(0..41)
+                            val author: ByteArray = qrData.sliceArray(44..61)
+                            val town: ByteArray = qrData.sliceArray(66..83)
+                            val colorPalette: ByteArray = qrData.sliceArray(88..102)
+                            val data: ByteArray = qrData.sliceArray(108 until qrData.size)
+                            //textViewCreate.text = data.size.toString()
+                            val titletest: String = title.joinToString(separator = "", transform = { it.toChar().toString() })
+                            val authortest: String = author.joinToString(separator = "", transform = { it.toChar().toString() })
+                            val towntest: String = town.joinToString(separator = "", transform = { it.toChar().toString() })
+                            val colortest: String = colorPalette.joinToString(separator = "", transform = { it.toChar().toString() })
+
+                            var colorarray = ""
+                            for (b in colorPalette) {
+                                val st = String.format("%02X", b)
+                                colorarray += " $st"
+                                println(st)
+                            }
+
+                            var dataarray = ""
+                            for (b in data) {
+                                val st = String.format("%02X", b)
+                                dataarray += " $st"
+                                println(st)
+                            }
+
+                            //val pixels = getPixelColorsFromBytes(data)// Put this inside createBitmapFromQRData
+                            val qrDecodedBmp = createBitmapFromQRData(data, colorPalette)
+
+
+                            val valueType = barcode.valueType
+
+
+
+                            // See API reference for complete list of supported types
+                            when (valueType) {
+                                Barcode.TYPE_WIFI -> {
+                                    val ssid = barcode.wifi!!.ssid
+                                    val password = barcode.wifi!!.password
+                                    val type = barcode.wifi!!.encryptionType
+                                }
+                                Barcode.TYPE_URL -> {
+                                    val title = barcode.url!!.title
+                                    val url = barcode.url!!.url
+                                }
+                            }
+                        }
+
+                    }catch (e: Exception){
+                        Toast.makeText(activity, "Could not read animal crossing qr code", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    // Task failed with an exception
+                    // ...
+                }
+        return result.result[0].rawBytes
+    }
+
+    fun createBitmapFromQRData(pixelPairs: ByteArray, colorPalette: ByteArray): Bitmap {
+        """
+            Dont think this works (correctly)
+            
+            pixels should maybe be ByteArray?
+        """
         val height: Int = 32
         val width: Int = 32
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
+
+        //val pixels = getPixelColorsFromBytes(data)// Put this inside createBitmapFromQRData
+
         var counter = 0
         for (y in 0 until height) {
             for (x in 0 until width) {
-                var color = animalCrossingPaletteColors[colorPalette[pixels[counter]]]
+                // Todo Split each byte into 2
+
+
+                val color = animalCrossingPaletteColor[colorPalette[pixelPairs[counter].toInt()]]
                 if (color != null) {
                     //color = "ff" + color.slice(1 until color.length)
                     //color = color.toUpperCase()
@@ -305,53 +361,12 @@ class CreateFragment : Fragment() {
                     Color.WHITE
                     bmp.setPixel(x, y, color)//.get(x, y)) Color.BLACK else Color.WHITE)
                 }
-
                 counter++
             }
         }
-        //imageView.setImageBitmap(bmp)
         return bmp
     }
-    fun getPixelColorsFromBytes(bytes: ByteArray): ArrayList<Int> {
-        val arrayListOfPixels = ArrayList<Int>()
 
-        for (byte in bytes) {
-            //val byte = "01101001".toInt(2).toByte()
-            val first_half = (byte.toInt() shr 4) and "00001111".toInt(2)
-            val second_half = byte.toInt() and "00001111".toInt(2)
-            val second_half2 = (byte.toInt() shr 4)
-
-            val byteasstring = byte.toString(2).padStart(8, '0')
-            val firsthalfbytestring = first_half.toString(2).padStart(8, '0')
-            val secondhalfbytestring = second_half.toString(2).padStart(8, '0')
-            println()
-            arrayListOfPixels.add(first_half)
-            arrayListOfPixels.add(second_half)
-
-        }
-        println()
-        return arrayListOfPixels
-    }
-
-    private fun getContrastRatio(color1: Color, color2: Color): Double {
-        val relativeLuminance1 = (
-                (0.2126 * color1.red()) +
-                        (0.7152 * color1.green()) +
-                        (0.0722 * color1.blue())
-                )
-        val relativeLuminance2 = (
-                (0.2126 * color2.red()) + (0.7152 * color2.green()) + (0.0722 * color2.blue()))
-
-        val contrastRatio: Double
-        // Todo: check if this is correct
-        contrastRatio = if (relativeLuminance1 > relativeLuminance2) {
-            (relativeLuminance1 + 0.0005)/(relativeLuminance2 + 0.0005)
-        }else {
-            (relativeLuminance2 + 0.0005)/(relativeLuminance1 + 0.0005)
-        }
-
-        return contrastRatio
-    }
 
     private fun getEuclideanSRGBDistance(color1: Color, color2: Color): Double {
         val redWeight = 0.3
@@ -365,7 +380,7 @@ class CreateFragment : Fragment() {
     }
 
     private fun getClosestColor(color: Color, method: (Color, Color) -> Double): Pair<Color, HashMap<Color, Double>> {
-        val acColors = animalCrossingPaletteColors.values
+        val acColors = animalCrossingPaletteColor.values
 
         var minDistance: Double = Double.MAX_VALUE
         var minDistanceColor: Color = color
@@ -389,9 +404,9 @@ class CreateFragment : Fragment() {
     }
 
     private fun convertBitmapToFitACPalette(bitmap: Bitmap, method: String = "rgb"): Bitmap{
-        val recoloredBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val arrayListOfImageColors = ArrayList<Color>()
-        val arrayListOfConvertColors = ArrayList<Color>()
+
+        val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
+        bitmap.getPixels(arrayListOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
         // Todo
         // Add up total distances PER color in AC color palette and choose the 15 highest?/lowest?
@@ -399,57 +414,40 @@ class CreateFragment : Fragment() {
         val colorDistanceMapOfMap = HashMap<Color, HashMap<Color, Double>>()
 
         // make array of already calculated distances for ACcolors and check against to reduce calculations
-        val colorDistanceMap =  HashMap<Color, Color>()
-        var found = 0
-        var notfound = 0
+        val colorDistanceMap =  listOf<Color>()
 
         for (y in 0 until bitmap.height) {
             for (x in 0 until bitmap.width){
                 val pixel = bitmap.getPixel(x, y)
                 val pixelColor = pixel.toColor()
-                arrayListOfImageColors.add(pixelColor)
-
-                // Todo clean this up
-                var closestColor: Color = pixelColor // temp value
-
-                if (colorDistanceMap.containsKey(pixelColor)) {
-                    found++
-                    closestColor = colorDistanceMap[pixelColor]!! // maybe not needed?
-                }else {
-                    notfound++
-                    when (method) {
-                        "rgb" -> {
-                            val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
-                            closestColor = closestColorInfo.first
-                            val distanceListForThisPixel = closestColorInfo.second
-                            colorDistanceMapOfMap[pixelColor] = distanceListForThisPixel
-                            colorDistanceMap[pixelColor] = closestColor
-                        }
-                        /*"contrast" -> {
-                            val closestColorInfo = getClosestColor(pixelColor, ::getContrastRatio)
-                            closestColor = closestColorInfo.first
-                            val distanceListForThisPixel = closestColorInfo.second
-                        }
-                        else -> {
-                            Toast.makeText(activity, "Color distance method not found. Using Euclidean sRGB Distance", Toast.LENGTH_LONG).show()
-                            val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
-                            closestColor = closestColorInfo.first
-                            val distanceListForThisPixel = closestColorInfo.second
-                        }*/
-                    }
-                }
-
                 //arrayListOfImageColors.add(pixelColor)
-                // TODO: Check which would be faster: using setPixel per pixel or for the whole bitmap at the end
-                //arrayListOfConvertColors.add(closestColor)
-                //recoloredBitmap.setPixel(x, y, closestColor.toArgb())
+
+                if (colorDistanceMap.contains(pixelColor)) {
+                    continue
+                }
+                when (method) {
+                    "rgb" -> {
+                        val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                        val distanceListForThisPixel = closestColorInfo.second
+                        colorDistanceMapOfMap[pixelColor] = distanceListForThisPixel
+                    }
+                    /*"contrast" -> {
+                        val closestColorInfo = getClosestColor(pixelColor, ::getContrastRatio)
+                        closestColor = closestColorInfo.first
+                        val distanceListForThisPixel = closestColorInfo.second
+                    }
+                    else -> {
+                        Toast.makeText(activity, "Color distance method not found. Using Euclidean sRGB Distance", Toast.LENGTH_LONG).show()
+                        val closestColorInfo = getClosestColor(pixelColor, ::getEuclideanSRGBDistance)
+                        closestColor = closestColorInfo.first
+                        val distanceListForThisPixel = closestColorInfo.second
+                    }*/
+                }
             }
         }
 
         // Is there a more effective way?
-        val test = colorDistanceMapOfMap.values
-        //test.in
-        val sumOfDifferencesForACColorPalette = HashMap<Color, Double>()
+        val sumOfDifferencesForACColorPalette = HashMap<Color, Double>() // (Color in ACPalette, SumOfDifferences)
         for (distanceMap in colorDistanceMapOfMap.values) {
             for ((colorKey, distanceValue) in distanceMap) {
                 sumOfDifferencesForACColorPalette[colorKey] = sumOfDifferencesForACColorPalette.getOrDefault(colorKey, 0.0) + distanceValue
@@ -457,36 +455,27 @@ class CreateFragment : Fragment() {
         }
         val orderedSumOfDifferencesACPalette = sumOfDifferencesForACColorPalette.entries.sortedWith(compareBy { it.value })
         val topFifteenColors = orderedSumOfDifferencesACPalette.slice(0..14)
+        // TODO: turn topFifteenColors into list instead of list of map here
+        convertedImageColorPalettePositions = topFifteenColors.map { animalCrossingPaletteColorToPositionMap[it.key.toArgb()]!! }.toList()
 
         // Using only 15 colors from AC palette
         val finalizedColorConversionMap =  HashMap<Color, Color>()
-
         for ((pixelColor, distanceMap) in colorDistanceMapOfMap) {
-
             val closestColorWithin15ColorPalette = distanceMap.filterKeys { it -> it in topFifteenColors.map { it.key } }.entries.sortedWith(compareBy { it.value })[0].key
             finalizedColorConversionMap[pixelColor] = closestColorWithin15ColorPalette
         }
 
-        Color()
-        val tt = arrayListOfImageColors.map { finalizedColorConversionMap[it]!!.toArgb() }
-        /*val ff = Bitmap.createBitmap(arrayListOfImageColors.map { finalizedColorConversionMap[it]. },
-                offset=0,
-                stride=bitmap.width,
-                width=bitmap.width,
-                height=bitmap.height,
-                config=Bitmap.Config.ARGB_8888)
-*/
+        val recoloredImagePixels: IntArray = arrayListOfImageColors.map { finalizedColorConversionMap[it.toColor()]!!.toArgb() }.toList().toIntArray()
 
-        val bf = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        bf.setPixels(tt.toList().toIntArray(), 0, bitmap.width, 0,0, bitmap.width, bitmap.height)
+        convertedImagePixels = recoloredImagePixels
 
-        return bf
+        val newBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        newBitmap.setPixels(recoloredImagePixels, 0, bitmap.width, 0,0, bitmap.width, bitmap.height)
 
-        //recoloredBitmap.setPixels()
-        //return recoloredBitmap
+        return newBitmap
     }
 
-    private fun generateQRCode(text: String): Bitmap {
+    private fun generateQRCodeBasic(text: String): Bitmap {
         val width = 500
         val height = 500
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -503,9 +492,87 @@ class CreateFragment : Fragment() {
         }
         return bitmap
     }
+/*
+    //private fun generateQRCode(image: Bitmap): Bitmap {
+    private fun generateQRCode(title: String = "title", author: String = "author", town: String = "town"): Bitmap {
 
-    private fun generateQRCode(image: Bitmap): Bitmap {
+        //val title = "title" //ACNL: 21chars, ACNH: 20chars
+        //val author = "author" //ACNL: 9chars, ACNH: 10chars
+        //val town = "town" //ACNL: 9chars, ACNH: 10chars
+        //val colorPalette = "" // 15 colors, half byte each?
+        //val data = ""
+
+        //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap())
+
+        var qrByteArrary = title.toByteArray()
+
+        while (qrByteArrary.size < 42) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0)
+
+        //Check if this is adding correctly
+        qrByteArrary += author.toByteArray()
+        while (qrByteArrary.size < 62) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0)
+
+        //Check if this is adding correctly
+        qrByteArrary += town.toByteArray()
+        while (qrByteArrary.size < 84) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0)
+
+        //Todo: fix this (1 byte position of color, shown in the xml file) DONE?
+        qrByteArrary += convertedImageColorPalette.mapNotNull { animalCrossingPaletteColorToPositionMap[it] }.toByteArray()
+        while (qrByteArrary.size < 103) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0, 0)
+
+        for (pixelPair in convertedImagePixels.toList().chunked(2)) {
+
+            val firstHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[0]) shl 4
+            val secondHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[1])
+            val combinedByte = firstHalfOfByte or secondHalfOfByte
+            qrByteArrary += combinedByte.toByte()
+        }
+
+        ////
+        //val qrCodeWriter = QRCodeWriter()
+        //val bitMatrix = qrCodeWriter.encode()
+                //"JavaSampleApproach\nJava Technology, Spring Framework",
+                //BarcodeFormat.QR_CODE,
+                //350, 350) // width x height
+        ////
+        val codeWriter = MultiFormatWriter()
         val width = 500
+        val height = 500
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+        try {
+
+            val bitMatrix = codeWriter.encode(qrByteArrary.toString(Charsets.ISO_8859_1),
+            //val bitMatrix = codeWriter.encode(getEncoder().encodeToString(qrByteArrary),
+            BarcodeFormat.QR_CODE, width, height)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                }
+            }
+        } catch (e: WriterException) {
+            Log.d(TAG, "generateQRCode: ${e.message}")
+        }
+        return bitmap
+
+        //
+        /*val width = 500
         val height = 500
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val codeWriter = MultiFormatWriter()
@@ -519,8 +586,108 @@ class CreateFragment : Fragment() {
         } catch (e: WriterException) {
             Log.d(TAG, "generateQRCode: ${e.message}")
         }
-        return bitmap
+        imageView.setImageBitmap(bitmap)
+        return bitmap*/
     }
+
+    private fun generateQRCodeFromBitmap(title: String = "title", author: String = "author", town: String = "town"): Bitmap {
+
+        //val title = "title" //ACNL: 21chars, ACNH: 20chars
+        //val author = "author" //ACNL: 9chars, ACNH: 10chars
+        //val town = "town" //ACNL: 9chars, ACNH: 10chars
+        //val colorPalette = "" // 15 colors, half byte each?
+        //val data = ""
+
+        //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap())
+
+        var qrByteArrary = title.toByteArray()
+
+        while (qrByteArrary.size < 42) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0)
+
+        //Check if this is adding correctly
+        qrByteArrary += author.toByteArray()
+        while (qrByteArrary.size < 62) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0)
+
+        //Check if this is adding correctly
+        qrByteArrary += town.toByteArray()
+        while (qrByteArrary.size < 84) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0)
+
+        if (BuildConfig.DEBUG && convertedImageColorPalette.size != 15) {
+            error("Assertion failed")
+        }
+        //Todo: fix this (1 byte position of color, shown in the xml file) DONE?
+        qrByteArrary += convertedImageColorPalette.mapNotNull { animalCrossingPaletteColorToPositionMap[it] }.toByteArray()
+        while (qrByteArrary.size < 103) {
+            qrByteArrary += 0
+        }
+
+        qrByteArrary += byteArrayOf(0, 0, 0, 0, 0)
+
+        for (pixelPair in convertedImagePixels.toList().chunked(2)) {
+
+            val firstHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[0]) shl 4
+            val secondHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[1])
+            val combinedByte = firstHalfOfByte or secondHalfOfByte
+            qrByteArrary += combinedByte.toByte()
+        }
+
+        ////
+        //val qrCodeWriter = QRCodeWriter()
+        //val bitMatrix = qrCodeWriter.encode()
+        //"JavaSampleApproach\nJava Technology, Spring Framework",
+        //BarcodeFormat.QR_CODE,
+        //350, 350) // width x height
+        ////
+        val codeWriter = MultiFormatWriter()
+        val width = 500
+        val height = 500
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+        try {
+
+            val bitMatrix = codeWriter.encode(qrByteArrary.toString(Charsets.ISO_8859_1),
+                    //val bitMatrix = codeWriter.encode(getEncoder().encodeToString(qrByteArrary),
+                    BarcodeFormat.QR_CODE, width, height)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                }
+            }
+        } catch (e: WriterException) {
+            Log.d(TAG, "generateQRCode: ${e.message}")
+        }
+        return bitmap
+
+        //
+        /*val width = 500
+        val height = 500
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val codeWriter = MultiFormatWriter()
+        try {
+            val bitMatrix = codeWriter.encode("image", BarcodeFormat.QR_CODE, width, height)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                }
+            }
+        } catch (e: WriterException) {
+            Log.d(TAG, "generateQRCode: ${e.message}")
+        }
+        imageView.setImageBitmap(bitmap)
+        return bitmap*/
+    }*/
 
     private fun update_rows_columns(){
         val amtCols = textViewRowCol.text.toString().toInt()

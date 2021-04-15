@@ -1,4 +1,4 @@
- package com.example.animalcrossingdesign.ui.create
+package com.example.animalcrossingdesign.ui.create
 
 import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
@@ -32,8 +32,9 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import java.lang.Exception
-import com.example.animalcrossingdesign.AnimalCrossingColors
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.*
 import kotlin.math.pow
 
 
@@ -59,11 +60,11 @@ class CreateFragment : Fragment() {
     private val animalCrossingDesignWidth = 32
     private val animalCrossingDesignHeight = 32
 
-    private val animalCrossingPaletteColor = AnimalCrossingColors().animalCrossingPalettePositionToColorMap
-    private val animalCrossingPaletteColorToPositionMap = AnimalCrossingColors().animalCrossingPaletteColorToPositionMap
-
     private lateinit var convertedImageColorPalettePositions: List<Byte> // as 1 Byte location based on xml file
     private lateinit var convertedImagePixels: IntArray
+
+    private lateinit var var1: ByteArray
+    private lateinit var var2: ByteArray
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -153,13 +154,155 @@ class CreateFragment : Fragment() {
         // Create onClickListener for button to create QR code
         val createQRButton: Button = root.findViewById(R.id.createQRButton)
         createQRButton.setOnClickListener {
-            /*val qrCodeBitmap = generateQRCode()
+            /*// Normal function
+            val qrCodeBitmap = generateQRCode()
             val newView = ImageView(activity)
             newView.setImageBitmap(qrCodeBitmap)
             val layout: LinearLayout = root.findViewById(R.id.create_fragment_list_layout)
             layout.addView(newView)
             imageView.setImageBitmap(qrCodeBitmap)*/
 
+            // Testing
+            // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
+            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+            val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                            Barcode.FORMAT_QR_CODE)
+                    .build()
+            val scanner = BarcodeScanning.getClient(options)
+            val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
+                    .addOnSuccessListener { barcodes ->
+                        // Task completed successfully
+                        // ...
+                        println("nr of barcodes: ")
+                        println(barcodes.size)
+
+                        var1 = barcodes[0].rawBytes!!
+
+                        val QRObject = AnimalCrossingQRObject(barcodes[0].rawBytes!!)
+                        val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
+                        newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
+                        //val QRCodeBitmap = AnimalCrossingQRObject.generateQRCodeFromBitmap(newBitmap, QRObject.colorPalettePositions)
+                        val QRCodeBitmap = QRObject.toQRBitmap()
+                        //NB TESTING
+                        val rawbytestest = QRObject.toQRRawBytes()
+                        println("var1: ${var1.size}")
+                        println("qrobjectrawbytes: ${rawbytestest.size}")
+                        for (i in var1.indices) {
+                            if (var1[i] != rawbytestest[i]) {
+                                println("(${i.toString(16)}) ($i) ---- ${var1[i]} : ${rawbytestest[i]}")
+                            }
+                        }
+                        imageView.setImageBitmap(QRCodeBitmap)
+                        // END TESTING
+                        val myImage = InputImage.fromBitmap(QRCodeBitmap, 0)
+                        val newOptions = BarcodeScannerOptions.Builder()
+                                .setBarcodeFormats(
+                                        Barcode.FORMAT_QR_CODE)
+                                .build()
+                        val newScanner = BarcodeScanning.getClient(newOptions)
+                        val result = newScanner.process(myImage) // TODO: debugging not going inside onSuccessListener. Why?
+                                .addOnSuccessListener { barcodes2 ->
+                                    // Task completed successfully
+                                    // ...
+                                    var2 = barcodes2[0].rawBytes!!
+                                    println("nr of barcodes: ")
+                                    println(barcodes2.size)
+                                    println("var1: ${var1.size}")
+                                    println("var2: ${var2.size}")
+                                    for (i in var1.indices) {
+                                        if (var1[i] != var2[i]) {
+                                            var1[i]
+                                            var2[i]
+                                            println("(${i.toString(16)}) ($i) ---- ${var1[i]} : ${rawbytestest[i]}")
+                                            println("hello")
+                                        }
+                                    }
+                                    val abc = barcodes2[0].rawBytes!!
+                                }
+                                .addOnFailureListener {
+                                    // Task failed with an exception
+                                    // ...
+                                    println("Scanner failed")
+                                    println("fix this")
+                                }
+                    }
+                    .addOnFailureListener {
+                        // Task failed with an exception
+                        // ...
+                        println("Scanner failed")
+                        println("fix this")
+                    }
+            // End testing
+        }
+
+        // Create onClickListener for button to create QR code
+        val createQRButton2: Button = root.findViewById(R.id.createQRButton2)
+        createQRButton2.setOnClickListener {
+            /*
+            Reads bitmap and creates qr code bitmap with copy of original data.
+            The qr code created does not work with the game: "Wrong format"
+             */
+            val origbitmap = imageView.drawable.toBitmap()
+            //Bitmap.crea
+            // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
+            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+            val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                            Barcode.FORMAT_QR_CODE)
+                    .build()
+            val scanner = BarcodeScanning.getClient(options)
+            val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
+                    .addOnSuccessListener { barcodes ->
+                        // Task completed successfully
+                        // ...
+                        println("nr of barcodes: ")
+                        println(barcodes.size)
+
+                        var1 = barcodes[0].rawBytes!!
+
+
+                        val newBitmap = AnimalCrossingQRObject.byteArrayToQRCode(var1)
+
+                        imageView.setImageBitmap(newBitmap)
+                        // END TESTING
+                    }
+        }
+
+        // Create onClickListener for button to zoom on qr code
+        val qrCloseUp: Button = root.findViewById(R.id.QRCloseup)
+        qrCloseUp.setOnClickListener {
+            val origbitmap = imageView.drawable.toBitmap()
+            //Bitmap.crea
+            // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
+            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+            val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                            Barcode.FORMAT_QR_CODE)
+                    .build()
+            val scanner = BarcodeScanning.getClient(options)
+            val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
+                    .addOnSuccessListener { barcodes ->
+                        // Task completed successfully
+                        // ...
+                        println("nr of barcodes: ")
+                        println(barcodes.size)
+
+                        var1 = barcodes[0].rawBytes!!
+
+                        for (barcode in barcodes) {
+                            barcode
+                            //val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
+                            //newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
+                            val box = barcode.getBoundingBox()
+                            val newbitmap = Bitmap.createBitmap(imageView.drawable.toBitmap(),
+                                    box.left-0, box.top-0, box.width(), box.height())
+                            imageView.setImageBitmap(newbitmap)
+
+                            barcode
+                        }
+                    // END TESTING
+                    }
         }
 
         // Connect the imageview
@@ -187,8 +330,7 @@ class CreateFragment : Fragment() {
 
 
         imageView.setOnClickListener {
-
-            readQR()
+            readQR(imageView.drawable.toBitmap())
 
             println("buttonpressstart")
             addpicstest()
@@ -214,23 +356,23 @@ class CreateFragment : Fragment() {
     }
 
     fun decodeEncodeCheck() {
-        val rawBytes = readQR()
+        /*
+        Dont think this works
+         */
+        val rawBytes = readQR(imageView.drawable.toBitmap())
 
         val QRObject = AnimalCrossingQRObject(rawBytes!!) // Should I be using !!?
 
         val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
         newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
 
+        //val QRCodeBitmap = AnimalCrossingQRObject.generateQRCodeFromBitmap(newBitmap, QRObject.colorPalettePositions)
+        val QRCodeBitmap = QRObject.toQRBitmap()
 
+        val myRawBytes = readQR(QRCodeBitmap)
 
-        // possible functions
-        //getPixelColorsFromBytes() (now a class function of ACQRObject)renamed to getPixelColorPositionsFromBytes
+        println("hello")
 
-        // create bitmap from rawbytes
-        //createBitmapFromQRData //deprecated
-
-        // use bitmap to recreate rawbytes/qr code
-        //generateQRCode()
     }
 
     fun testZXingCreateQR() {
@@ -251,17 +393,19 @@ class CreateFragment : Fragment() {
 
     }
 
-    fun readQR(): ByteArray? {
+    fun readQR(bitmap: Bitmap): ByteArray? {
+        /*
+        NB: This always returns null.
+         */
         // read qr code
         // Testing google ml kit qr code
-        val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+        val image = InputImage.fromBitmap(bitmap, 0)
         val options = BarcodeScannerOptions.Builder()
                 .setBarcodeFormats(
-                        Barcode.FORMAT_QR_CODE,
-                        Barcode.FORMAT_AZTEC)
+                        Barcode.FORMAT_QR_CODE)
                 .build()
         val scanner = BarcodeScanning.getClient(options)
-        val result = scanner.process(image)
+        val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
                 .addOnSuccessListener { barcodes ->
                     // Task completed successfully
                     // ...
@@ -281,11 +425,6 @@ class CreateFragment : Fragment() {
                             val town: ByteArray = qrData.sliceArray(66..83)
                             val colorPalette: ByteArray = qrData.sliceArray(88..102)
                             val data: ByteArray = qrData.sliceArray(108 until qrData.size)
-                            //textViewCreate.text = data.size.toString()
-                            val titletest: String = title.joinToString(separator = "", transform = { it.toChar().toString() })
-                            val authortest: String = author.joinToString(separator = "", transform = { it.toChar().toString() })
-                            val towntest: String = town.joinToString(separator = "", transform = { it.toChar().toString() })
-                            val colortest: String = colorPalette.joinToString(separator = "", transform = { it.toChar().toString() })
 
                             var colorarray = ""
                             for (b in colorPalette) {
@@ -301,13 +440,7 @@ class CreateFragment : Fragment() {
                                 println(st)
                             }
 
-                            //val pixels = getPixelColorsFromBytes(data)// Put this inside createBitmapFromQRData
-                            val qrDecodedBmp = createBitmapFromQRData(data, colorPalette)
-
-
                             val valueType = barcode.valueType
-
-
 
                             // See API reference for complete list of supported types
                             when (valueType) {
@@ -330,41 +463,12 @@ class CreateFragment : Fragment() {
                 .addOnFailureListener {
                     // Task failed with an exception
                     // ...
+                    println("Scanner failed")
+                    println("fix this")
                 }
-        return result.result[0].rawBytes
-    }
-
-    fun createBitmapFromQRData(pixelPairs: ByteArray, colorPalette: ByteArray): Bitmap {
-        """
-            Dont think this works (correctly)
-            
-            pixels should maybe be ByteArray?
-        """
-        val height: Int = 32
-        val width: Int = 32
-        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-
-        //val pixels = getPixelColorsFromBytes(data)// Put this inside createBitmapFromQRData
-
-        var counter = 0
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                // Todo Split each byte into 2
-
-
-                val color = animalCrossingPaletteColor[colorPalette[pixelPairs[counter].toInt()]]
-                if (color != null) {
-                    //color = "ff" + color.slice(1 until color.length)
-                    //color = color.toUpperCase()
-                    //val colorInt = parseLong(color, 16)
-                    Color.WHITE
-                    bmp.setPixel(x, y, color)//.get(x, y)) Color.BLACK else Color.WHITE)
-                }
-                counter++
-            }
-        }
-        return bmp
+        // Todo: this suddely started failing here. Probably because return before OnSuccessListener is called. Can i move this into the listener or return a promis?
+        //return result.result[0].rawBytes
+        return null
     }
 
 
@@ -380,7 +484,7 @@ class CreateFragment : Fragment() {
     }
 
     private fun getClosestColor(color: Color, method: (Color, Color) -> Double): Pair<Color, HashMap<Color, Double>> {
-        val acColors = animalCrossingPaletteColor.values
+        val acColors = AnimalCrossingQRObject.animalCrossingPalettePositionToColorMap.values
 
         var minDistance: Double = Double.MAX_VALUE
         var minDistanceColor: Color = color
@@ -456,7 +560,7 @@ class CreateFragment : Fragment() {
         val orderedSumOfDifferencesACPalette = sumOfDifferencesForACColorPalette.entries.sortedWith(compareBy { it.value })
         val topFifteenColors = orderedSumOfDifferencesACPalette.slice(0..14)
         // TODO: turn topFifteenColors into list instead of list of map here
-        convertedImageColorPalettePositions = topFifteenColors.map { animalCrossingPaletteColorToPositionMap[it.key.toArgb()]!! }.toList()
+        convertedImageColorPalettePositions = topFifteenColors.map { AnimalCrossingQRObject.animalCrossingPaletteColorToPositionMap[it.key.toArgb()]!! }.toList()
 
         // Using only 15 colors from AC palette
         val finalizedColorConversionMap =  HashMap<Color, Color>()
@@ -492,202 +596,6 @@ class CreateFragment : Fragment() {
         }
         return bitmap
     }
-/*
-    //private fun generateQRCode(image: Bitmap): Bitmap {
-    private fun generateQRCode(title: String = "title", author: String = "author", town: String = "town"): Bitmap {
-
-        //val title = "title" //ACNL: 21chars, ACNH: 20chars
-        //val author = "author" //ACNL: 9chars, ACNH: 10chars
-        //val town = "town" //ACNL: 9chars, ACNH: 10chars
-        //val colorPalette = "" // 15 colors, half byte each?
-        //val data = ""
-
-        //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap())
-
-        var qrByteArrary = title.toByteArray()
-
-        while (qrByteArrary.size < 42) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0)
-
-        //Check if this is adding correctly
-        qrByteArrary += author.toByteArray()
-        while (qrByteArrary.size < 62) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0)
-
-        //Check if this is adding correctly
-        qrByteArrary += town.toByteArray()
-        while (qrByteArrary.size < 84) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0)
-
-        //Todo: fix this (1 byte position of color, shown in the xml file) DONE?
-        qrByteArrary += convertedImageColorPalette.mapNotNull { animalCrossingPaletteColorToPositionMap[it] }.toByteArray()
-        while (qrByteArrary.size < 103) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0, 0)
-
-        for (pixelPair in convertedImagePixels.toList().chunked(2)) {
-
-            val firstHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[0]) shl 4
-            val secondHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[1])
-            val combinedByte = firstHalfOfByte or secondHalfOfByte
-            qrByteArrary += combinedByte.toByte()
-        }
-
-        ////
-        //val qrCodeWriter = QRCodeWriter()
-        //val bitMatrix = qrCodeWriter.encode()
-                //"JavaSampleApproach\nJava Technology, Spring Framework",
-                //BarcodeFormat.QR_CODE,
-                //350, 350) // width x height
-        ////
-        val codeWriter = MultiFormatWriter()
-        val width = 500
-        val height = 500
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-        try {
-
-            val bitMatrix = codeWriter.encode(qrByteArrary.toString(Charsets.ISO_8859_1),
-            //val bitMatrix = codeWriter.encode(getEncoder().encodeToString(qrByteArrary),
-            BarcodeFormat.QR_CODE, width, height)
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                }
-            }
-        } catch (e: WriterException) {
-            Log.d(TAG, "generateQRCode: ${e.message}")
-        }
-        return bitmap
-
-        //
-        /*val width = 500
-        val height = 500
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val codeWriter = MultiFormatWriter()
-        try {
-            val bitMatrix = codeWriter.encode("image", BarcodeFormat.QR_CODE, width, height)
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                }
-            }
-        } catch (e: WriterException) {
-            Log.d(TAG, "generateQRCode: ${e.message}")
-        }
-        imageView.setImageBitmap(bitmap)
-        return bitmap*/
-    }
-
-    private fun generateQRCodeFromBitmap(title: String = "title", author: String = "author", town: String = "town"): Bitmap {
-
-        //val title = "title" //ACNL: 21chars, ACNH: 20chars
-        //val author = "author" //ACNL: 9chars, ACNH: 10chars
-        //val town = "town" //ACNL: 9chars, ACNH: 10chars
-        //val colorPalette = "" // 15 colors, half byte each?
-        //val data = ""
-
-        //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap())
-
-        var qrByteArrary = title.toByteArray()
-
-        while (qrByteArrary.size < 42) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0)
-
-        //Check if this is adding correctly
-        qrByteArrary += author.toByteArray()
-        while (qrByteArrary.size < 62) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0)
-
-        //Check if this is adding correctly
-        qrByteArrary += town.toByteArray()
-        while (qrByteArrary.size < 84) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0)
-
-        if (BuildConfig.DEBUG && convertedImageColorPalette.size != 15) {
-            error("Assertion failed")
-        }
-        //Todo: fix this (1 byte position of color, shown in the xml file) DONE?
-        qrByteArrary += convertedImageColorPalette.mapNotNull { animalCrossingPaletteColorToPositionMap[it] }.toByteArray()
-        while (qrByteArrary.size < 103) {
-            qrByteArrary += 0
-        }
-
-        qrByteArrary += byteArrayOf(0, 0, 0, 0, 0)
-
-        for (pixelPair in convertedImagePixels.toList().chunked(2)) {
-
-            val firstHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[0]) shl 4
-            val secondHalfOfByte = convertedImageColorPalette.indexOf(pixelPair[1])
-            val combinedByte = firstHalfOfByte or secondHalfOfByte
-            qrByteArrary += combinedByte.toByte()
-        }
-
-        ////
-        //val qrCodeWriter = QRCodeWriter()
-        //val bitMatrix = qrCodeWriter.encode()
-        //"JavaSampleApproach\nJava Technology, Spring Framework",
-        //BarcodeFormat.QR_CODE,
-        //350, 350) // width x height
-        ////
-        val codeWriter = MultiFormatWriter()
-        val width = 500
-        val height = 500
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-        try {
-
-            val bitMatrix = codeWriter.encode(qrByteArrary.toString(Charsets.ISO_8859_1),
-                    //val bitMatrix = codeWriter.encode(getEncoder().encodeToString(qrByteArrary),
-                    BarcodeFormat.QR_CODE, width, height)
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                }
-            }
-        } catch (e: WriterException) {
-            Log.d(TAG, "generateQRCode: ${e.message}")
-        }
-        return bitmap
-
-        //
-        /*val width = 500
-        val height = 500
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val codeWriter = MultiFormatWriter()
-        try {
-            val bitMatrix = codeWriter.encode("image", BarcodeFormat.QR_CODE, width, height)
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                }
-            }
-        } catch (e: WriterException) {
-            Log.d(TAG, "generateQRCode: ${e.message}")
-        }
-        imageView.setImageBitmap(bitmap)
-        return bitmap*/
-    }*/
 
     private fun update_rows_columns(){
         val amtCols = textViewRowCol.text.toString().toInt()

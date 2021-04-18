@@ -1,12 +1,10 @@
 package com.example.animalcrossingdesign
 
-import android.content.ContentValues.TAG
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.util.Log
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import net.glxn.qrgen.android.QRCode
+
 
 class AnimalCrossingQRObject {
     // Todo: Should these be nullable?
@@ -274,32 +272,21 @@ class AnimalCrossingQRObject {
         }
 
         fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {
-            val codeWriter = MultiFormatWriter()
-            val width = 897//500
-            val height = 897//500
-            val qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
-            try {
-
-                val bitMatrix = codeWriter.encode(qrByteArray.toString(Charsets.ISO_8859_1),
-                        //val bitMatrix = codeWriter.encode(getEncoder().encodeToString(qrByteArrary),
-                        BarcodeFormat.QR_CODE, width, height )
-                for (x in 0 until width) {
-                    for (y in 0 until height) {
-                        qrBitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                    }
-                }
-            } catch (e: WriterException) {
-                Log.d(TAG, "generateQRCode: ${e.message}")
-            }
-            return qrBitmap
+            return QRCode.from(qrByteArray.toString(Charsets.ISO_8859_1))
+                    .withCharset("ISO_8859_1")
+                    .withErrorCorrection(ErrorCorrectionLevel.M)
+                    .withHint(EncodeHintType.CHARACTER_SET, "ISO_8859_1")
+                    .withHint(EncodeHintType.QR_VERSION, "19")
+                    //.withHint() Mask
+                    .bitmap()
         }
 
         private fun generateQRCodeFromBitmap(bitmap: Bitmap, colorPalettePositions: ByteArray): Bitmap {
             /*
             Generate QR code bitmap from bitmap (NB! given that it is in the AC Color palette!)
              */
-            val intArrayOfImageColors = IntArray(bitmap.width*bitmap.height)
+            val intArrayOfImageColors = IntArray(bitmap.width * bitmap.height)
             bitmap.getPixels(intArrayOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
             val qrByteArray = pixelsToQRByteArray(intArrayOfImageColors, colorPalettePositions)
@@ -332,8 +319,8 @@ class AnimalCrossingQRObject {
         this.title = title
         this.author = author
         this.town = town
-        val tempIntArray = IntArray(bitmap.width*bitmap.height)
-        bitmap.getPixels(tempIntArray,0, bitmap.width,0,0, bitmap.width, bitmap.height);
+        val tempIntArray = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(tempIntArray, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height);
         this.imagePixels = tempIntArray
         this.colorPalettePositions = this.imagePixels.distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
         this.imagePositionByteData = pixelsToPositionByteData(this.imagePixels, this.colorPalettePositions)

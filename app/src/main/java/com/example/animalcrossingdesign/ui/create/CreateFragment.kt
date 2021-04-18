@@ -15,7 +15,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.get
 import androidx.core.graphics.scale
 import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
@@ -28,12 +27,8 @@ import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
 import java.lang.Exception
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
-import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.*
 import kotlin.math.pow
 
@@ -43,7 +38,6 @@ class CreateFragment : Fragment() {
     private lateinit var createViewModel: CreateViewModel
 
     lateinit var imageView: ImageView
-    lateinit var button: Button
     private lateinit var crop_switch: Switch
     private lateinit var split_images_hashmap: ArrayList<HashMap<String, Any>>
     private lateinit var textViewRowCol: TextView
@@ -348,10 +342,6 @@ class CreateFragment : Fragment() {
 
         }
 
-        // Tesitng ZXing qr again
-        val bitmap = generateQRCodeBasic("Sample Text")
-        imageView.setImageBitmap(bitmap)
-
         return root
     }
 
@@ -375,23 +365,6 @@ class CreateFragment : Fragment() {
 
     }
 
-    fun testZXingCreateQR() {
-        // Testing QR code stuff ZXing
-        val height: Int = imageView.drawable.toBitmap().height//bitMatrix.getHeight()
-        val width: Int = imageView.drawable.toBitmap().width//bitMatrix.getWidth()
-        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bmp.setPixel(x, y, if (imageView.drawable.toBitmap().get(x, y) > 100) Color.BLACK else Color.WHITE)//.get(x, y)) Color.BLACK else Color.WHITE)
-            }
-        }
-        imageView.setImageBitmap(bmp)
-
-        // Tesitng ZXing qr again
-        val bitmap = generateQRCodeBasic("Sample Text")
-        imageView.setImageBitmap(bitmap)
-
-    }
 
     fun readQR(bitmap: Bitmap): ByteArray? {
         /*
@@ -577,24 +550,6 @@ class CreateFragment : Fragment() {
         newBitmap.setPixels(recoloredImagePixels, 0, bitmap.width, 0,0, bitmap.width, bitmap.height)
 
         return newBitmap
-    }
-
-    private fun generateQRCodeBasic(text: String): Bitmap {
-        val width = 500
-        val height = 500
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val codeWriter = MultiFormatWriter()
-        try {
-            val bitMatrix = codeWriter.encode(text, BarcodeFormat.QR_CODE, width, height)
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-                }
-            }
-        } catch (e: WriterException) {
-            Log.d(TAG, "generateQRCode: ${e.message}")
-        }
-        return bitmap
     }
 
     private fun update_rows_columns(){

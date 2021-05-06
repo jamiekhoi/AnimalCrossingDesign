@@ -6,8 +6,15 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import net.glxn.qrgen.android.QRCode
 
 
+class ACObjectCreationException : RuntimeException {
+    constructor(message: String, ex: Exception?): super(message, ex) {}
+    constructor(message: String): super(message) {}
+    constructor(ex: Exception): super(ex) {}
+}
+
 class AnimalCrossingQRObject {
-    // Todo: Should these be nullable?
+    val PALETTE_MAX = 15
+
     var title: String
     var author: String
     var town: String
@@ -197,103 +204,6 @@ class AnimalCrossingQRObject {
         )
         val animalCrossingPaletteColorToPositionMap = animalCrossingPalettePositionToColorMap.entries.associate { it.value to it.key }
 
-        private fun pixelsToQRByteArray(intArrayOfImageColors: IntArray,
-                                        colorPalettePositions: ByteArray,
-                                        title: String = "title",
-                                        author: String = "author",
-                                        town: String = "Jolly Isle"): ByteArray {
-            // Unique ID
-            val _1: Byte = 0xB6.toByte()//0
-            val _2: Byte = 0xEC.toByte()//0
-            val _3: Byte = 0x44.toByte()//0
-            val _4: Byte = 0xC5.toByte()//0
-            val _5: Byte = 0x19.toByte()//0
-            val _6: Byte = 0x31.toByte()//0
-            val _12: Byte = 0
-            val _13: Byte = 0
-            val _14: Byte = 0
-            val _15: Byte = 0
-
-            val _7: Byte = 0xCC.toByte()//0 //todo: NB!!!
-            //
-            val _8: Byte = 0x0A.toByte()
-            val _9: Byte = 9// Panel Type // Todo: Make companion object for this
-            val _10: Byte = 0 // Fixed
-            val _11: Byte = 0 // Fixed
-
-
-            var qrByteArray = title.toByteArray()
-
-            while (qrByteArray.size < 42) {
-                qrByteArray += 0
-            }
-
-            qrByteArray += byteArrayOf(_1, _2)
-
-            qrByteArray += author.toByteArray()
-            while (qrByteArray.size < 62) {
-                qrByteArray += 0
-            }
-
-            qrByteArray += byteArrayOf(_12, _13, _3, _4)
-
-            qrByteArray += town.toByteArray()
-            while (qrByteArray.size < 84) {
-                qrByteArray += 0
-            }
-
-            qrByteArray += byteArrayOf(_14, _15, _5, _6)
-
-            if (BuildConfig.DEBUG && colorPalettePositions.size != 15) {
-                error("Assertion failed")
-            }
-
-            qrByteArray += colorPalettePositions
-            while (qrByteArray.size < 103) {
-                qrByteArray += 0
-            }
-
-            qrByteArray += byteArrayOf(_7, _8, _9, _10, _11)
-
-            // Pixel color to position byte data
-            qrByteArray += pixelsToPositionByteData(intArrayOfImageColors, colorPalettePositions)
-            return qrByteArray
-        }
-
-        private fun pixelsToPositionByteData(intArrayOfImageColors: IntArray, colorPalettePositions: ByteArray): ByteArray {
-            var qrByteArray = ByteArray(0)  // Todo: remove hardcoding
-            for (pixelPair in intArrayOfImageColors.toList().chunked(2)) {
-                val firstHalfOfByte = colorPalettePositions.indexOf(animalCrossingPaletteColorToPositionMap[pixelPair[0]]!!) shl 4
-                val secondHalfOfByte = colorPalettePositions.indexOf(animalCrossingPaletteColorToPositionMap[pixelPair[1]]!!)
-                val combinedByte = firstHalfOfByte or secondHalfOfByte
-                qrByteArray += combinedByte.toByte()
-            }
-            return qrByteArray
-        }
-
-        fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {
-
-            return QRCode.from(qrByteArray.toString(Charsets.ISO_8859_1))
-                    .withCharset("ISO_8859_1")
-                    .withErrorCorrection(ErrorCorrectionLevel.M)
-                    .withHint(EncodeHintType.CHARACTER_SET, "ISO_8859_1")
-                    .withHint(EncodeHintType.QR_VERSION, "19")
-                    //.withHint() Mask
-                    .bitmap()
-        }
-
-        private fun generateQRCodeFromBitmap(bitmap: Bitmap, colorPalettePositions: ByteArray): Bitmap {
-            /*
-            Generate QR code bitmap from bitmap (NB! given that it is in the AC Color palette!)
-             */
-            val intArrayOfImageColors = IntArray(bitmap.width * bitmap.height)
-            bitmap.getPixels(intArrayOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-
-            val qrByteArray = pixelsToQRByteArray(intArrayOfImageColors, colorPalettePositions)
-            val qrBitmap = byteArrayToQRCode(qrByteArray)
-
-            return qrBitmap
-        }
     }
 
     constructor(rawQRBytes: ByteArray) {
@@ -312,17 +222,36 @@ class AnimalCrossingQRObject {
         this.imagePixels = getPixelColorsFromBytes(imageData).toIntArray()
     }
 
-    constructor(bitmap: Bitmap,
+    constructor(convertedBitmap: Bitmap,
                 title: String = "title",
                 author: String = "author",
-                town: String = "Jolly Isle") {
+                town: String = "JollyIsle",
+                converted: Boolean = true // Todo
+    ) {
+
+        constructorLenChecks(title, author, town)
+
         this.title = title
         this.author = author
         this.town = town
-        val tempIntArray = IntArray(bitmap.width * bitmap.height)
-        bitmap.getPixels(tempIntArray, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height);
+        val tempIntArray = IntArray(convertedBitmap.width * convertedBitmap.height)
+        convertedBitmap.getPixels(tempIntArray, 0, convertedBitmap.width, 0, 0, convertedBitmap.width, convertedBitmap.height);
         this.imagePixels = tempIntArray
-        this.colorPalettePositions = this.imagePixels.distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
+
+        var tmpPalette = this.imagePixels.distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
+        for (el in animalCrossingPaletteColorToPositionMap.values) {
+            if (tmpPalette.size >= PALETTE_MAX) {
+                break
+            }
+            if (!tmpPalette.contains(el)) {
+                tmpPalette += el
+            }
+        }
+        if (tmpPalette.size > PALETTE_MAX) {
+            throw ACObjectCreationException("Error in ACObject class palette assignment")
+        }
+        this.colorPalettePositions = tmpPalette
+
         this.imagePositionByteData = pixelsToPositionByteData(this.imagePixels, this.colorPalettePositions)
     }
 
@@ -334,10 +263,35 @@ class AnimalCrossingQRObject {
         /*
         Todo: use this in the constructors and make this a class member
          */
-        return pixelsToQRByteArray(imagePixels, colorPalettePositions, title, author, town)
+        return allDataToQRByteArray(imagePixels, colorPalettePositions, title, author, town)
     }
 
+    private fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {
+        return QRCode.from(qrByteArray.toString(Charsets.ISO_8859_1))
+            //.withCharset("ISO_8859_1")
+            .withSize(900, 900)
+            .withErrorCorrection(ErrorCorrectionLevel.M)
+            //.withHint(EncodeHintType.CHARACTER_SET, "ISO_8859_1")
+            .withHint(EncodeHintType.QR_VERSION, "19")
+            //.withHint() Mask
+            .bitmap()
+    }
 
+    private fun constructorLenChecks(title: String, author: String, town: String) {
+        val titleMax = 20
+        val authorMax = 10
+        val townMax = 10
+
+        if (title.length > titleMax){
+            throw ACObjectCreationException("Title length over $titleMax characters")
+        }
+        if (author.length > authorMax){
+            throw ACObjectCreationException("Author length over $authorMax characters")
+        }
+        if (town.length > townMax){
+            throw ACObjectCreationException("Town length over $townMax characters")
+        }
+    }
 
     private fun getPixelColorsFromBytes(bytes: ByteArray): ArrayList<Int> {
         val arrayListOfPixels = ArrayList<Int>()
@@ -351,6 +305,83 @@ class AnimalCrossingQRObject {
         return arrayListOfPixels
     }
 
+    private fun allDataToQRByteArray(intArrayOfImageColors: IntArray,
+                                     colorPalettePositions: ByteArray,
+                                     title: String = "title",
+                                     author: String = "author",
+                                     town: String = "JollyIsle"): ByteArray {
+        fun stringFormatHelper(s: String): ByteArray {
+            return s.toByteArray()
+            //return s.toByteArray().zip(ByteArray(s.length)){ a,b -> listOf(a,b)}.flatten().toByteArray()
+        }
+
+        // Unique ID
+        val _1: Byte = 0xB6.toByte()//0
+        val _2: Byte = 0xEC.toByte()//0
+        val _3: Byte = 0x44.toByte()//0
+        val _4: Byte = 0xC5.toByte()//0
+        val _5: Byte = 0x19.toByte()//0
+        val _6: Byte = 0x31.toByte()//0
+        val _12: Byte = 0
+        val _13: Byte = 0
+        val _14: Byte = 0
+        val _15: Byte = 0
+
+        val _7: Byte = 0xCC.toByte()//0 //todo: NB!!!
+        //
+        val _8: Byte = 0x0A.toByte()
+        val _9: Byte = 9// Panel Type // Todo: Make companion object for this
+        val _10: Byte = 0 // Fixed
+        val _11: Byte = 0 // Fixed
 
 
+        var qrByteArray = stringFormatHelper(title)
+
+        while (qrByteArray.size < 42) {
+            qrByteArray += 0
+        }
+
+        qrByteArray += byteArrayOf(_1, _2)
+
+        // author.toByteArray()
+        qrByteArray += stringFormatHelper(author)
+        while (qrByteArray.size < 62) {
+            qrByteArray += 0
+        }
+
+        qrByteArray += byteArrayOf(_12, _13, _3, _4)
+
+        qrByteArray += stringFormatHelper(town)
+        while (qrByteArray.size < 84) {
+            qrByteArray += 0
+        }
+
+        qrByteArray += byteArrayOf(_14, _15, _5, _6)
+
+        if (BuildConfig.DEBUG && colorPalettePositions.size > PALETTE_MAX) {
+            error("Assertion failed")
+        }
+
+        qrByteArray += colorPalettePositions
+        while (qrByteArray.size < 103) {
+            qrByteArray += 0
+        }
+
+        qrByteArray += byteArrayOf(_7, _8, _9, _10, _11)
+
+        // Pixel color to position byte data
+        qrByteArray += pixelsToPositionByteData(intArrayOfImageColors, colorPalettePositions)
+        return qrByteArray
+    }
+
+    private fun pixelsToPositionByteData(intArrayOfImageColors: IntArray, colorPalettePositions: ByteArray): ByteArray {
+        var qrByteArray = ByteArray(0)  // Todo: remove hardcoding
+        for (pixelPair in intArrayOfImageColors.toList().chunked(2)) {
+            val firstHalfOfByte = colorPalettePositions.indexOf(animalCrossingPaletteColorToPositionMap[pixelPair[0]]!!) shl 4
+            val secondHalfOfByte = colorPalettePositions.indexOf(animalCrossingPaletteColorToPositionMap[pixelPair[1]]!!)
+            val combinedByte = firstHalfOfByte or secondHalfOfByte
+            qrByteArray += combinedByte.toByte()
+        }
+        return qrByteArray
+    }
 }

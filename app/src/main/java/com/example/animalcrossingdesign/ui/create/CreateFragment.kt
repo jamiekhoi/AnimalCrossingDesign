@@ -29,6 +29,8 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import java.lang.Exception
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
 import kotlin.math.pow
 
@@ -59,6 +61,8 @@ class CreateFragment : Fragment() {
 
     private lateinit var var1: ByteArray
     private lateinit var var2: ByteArray
+
+    private val db = Firebase.firestore
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -155,12 +159,14 @@ class CreateFragment : Fragment() {
             val QRCodeBitmap = QRObject.toQRBitmap()
             imageView.setImageBitmap(QRCodeBitmap)
 
+            saveToFirebaseFireStore(QRObject)
+
         }
 
         // Create onClickListener for button to create QR code
         val createQRButton2: Button = root.findViewById(R.id.createQRButton2)
         createQRButton2.setOnClickListener {
-            // Testing
+            // Testing NOT WORKING
             // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
             val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
             val options = BarcodeScannerOptions.Builder()
@@ -319,6 +325,20 @@ class CreateFragment : Fragment() {
         }
 
         return root
+    }
+
+    private fun saveToFirebaseFireStore(qrObject: AnimalCrossingQRObject) {
+        // Add a new document with a generated ID
+        // TODO: Fix authentication so only logged in users can read/write
+        //db.document("users/" + FirebaseAuth.getInstance().currentUser.uid).collection("users")
+        db.collection("designObjects")
+            .add(qrObject)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding document", e)
+            }
     }
 
     private fun getEuclideanSRGBDistance(color1: Color, color2: Color): Double {

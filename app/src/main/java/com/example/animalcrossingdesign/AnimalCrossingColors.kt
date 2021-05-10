@@ -19,7 +19,7 @@ class AnimalCrossingQRObject {
     var author: String
     var town: String
     var colorPalettePositions: ByteArray
-    var imagePixels: IntArray
+    private lateinit var imagePixels: List<Int>
     var imagePositionByteData: ByteArray
 
     companion object {
@@ -219,7 +219,7 @@ class AnimalCrossingQRObject {
         this.colorPalettePositions = colorPalettePositions
         this.imagePositionByteData = imageData
         //this.imagePixels = getPixelColorsFromBytes(imageData).map { animalCrossingPalettePositionToColorMap[this.colorPalettePositions[it]]!! }.toIntArray()
-        this.imagePixels = getPixelColorsFromBytes(imageData).toIntArray()
+        setImagePixels(getPixelColorsFromBytes(imageData).toIntArray())
     }
 
     constructor(convertedBitmap: Bitmap,
@@ -236,9 +236,9 @@ class AnimalCrossingQRObject {
         this.town = town
         val tempIntArray = IntArray(convertedBitmap.width * convertedBitmap.height)
         convertedBitmap.getPixels(tempIntArray, 0, convertedBitmap.width, 0, 0, convertedBitmap.width, convertedBitmap.height);
-        this.imagePixels = tempIntArray
+        setImagePixels(tempIntArray)
 
-        var tmpPalette = this.imagePixels.distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
+        var tmpPalette = getImagePixels().distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
         for (el in animalCrossingPaletteColorToPositionMap.values) {
             if (tmpPalette.size >= PALETTE_MAX) {
                 break
@@ -252,7 +252,23 @@ class AnimalCrossingQRObject {
         }
         this.colorPalettePositions = tmpPalette
 
-        this.imagePositionByteData = pixelsToPositionByteData(this.imagePixels, this.colorPalettePositions)
+        this.imagePositionByteData = pixelsToPositionByteData(getImagePixels(), this.colorPalettePositions)
+    }
+
+    fun getImagePixels(): IntArray {
+        /*
+        Quick fix to serialize class in Firestore
+        Can't serialize IntArray
+         */
+        return imagePixels.toIntArray()
+    }
+
+    fun setImagePixels(pixels: IntArray) {
+        /*
+        Quick fix to serialize class in Firestore
+        Can't serialize IntArray
+         */
+        imagePixels = pixels.toList()
     }
 
     fun toQRBitmap(): Bitmap {
@@ -263,7 +279,7 @@ class AnimalCrossingQRObject {
         /*
         Todo: use this in the constructors and make this a class member
          */
-        return allDataToQRByteArray(imagePixels, colorPalettePositions, title, author, town)
+        return allDataToQRByteArray(getImagePixels(), colorPalettePositions, title, author, town)
     }
 
     private fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {

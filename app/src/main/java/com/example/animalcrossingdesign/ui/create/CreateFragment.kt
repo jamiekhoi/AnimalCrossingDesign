@@ -179,7 +179,7 @@ class CreateFragment : Fragment() {
 
                     val QRObject = AnimalCrossingQRObject(barcodes[0].rawBytes!!)
                     val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
-                    newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
+                    newBitmap.setPixels(QRObject.getImagePixels(), 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
                     //val QRCodeBitmap = AnimalCrossingQRObject.generateQRCodeFromBitmap(newBitmap, QRObject.colorPalettePositions)
                     // QRObject.toRawBytes == var1
 

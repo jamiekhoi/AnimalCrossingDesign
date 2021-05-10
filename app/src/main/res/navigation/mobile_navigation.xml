@@ -25,9 +25,9 @@
 
     <!--Firebase login stuff-->
     <fragment
-        android:id="@+id/mainFragment"
+        android:id="@+id/mainLoginFragment"
         android:name="com.example.animalcrossingdesign.firebaseuiloginsample.MainFragment"
-        android:label="MainFragment">
+        android:label="MainLoginFragment">
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"

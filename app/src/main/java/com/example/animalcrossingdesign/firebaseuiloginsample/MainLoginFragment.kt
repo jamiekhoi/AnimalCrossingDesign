@@ -29,7 +29,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.example.animalcrossingdesign.R
 // Todo: how does databind work?
-import com.example.animalcrossingdesign.databinding.FragmentMainBinding
+import com.example.animalcrossingdesign.databinding.FragmentMainLoginBinding
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
@@ -45,12 +45,12 @@ class MainFragment : Fragment() {
 
     // Get a reference to the ViewModel scoped to this Fragment
     private val viewModel by viewModels<LoginViewModel>()
-    private lateinit var binding: FragmentMainBinding
+    private lateinit var binding: FragmentMainLoginBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main_login, container, false)
 
         binding.authButton.setOnClickListener { launchSignInFlow() }
 

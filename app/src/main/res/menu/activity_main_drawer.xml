@@ -17,7 +17,7 @@
             android:icon="@drawable/ic_create"
             android:title="Create" />
         <item
-            android:id="@+id/mainFragment"
+            android:id="@+id/mainLoginFragment"
             android:icon="@drawable/ic_create"
             android:title="Login" />
     </group>

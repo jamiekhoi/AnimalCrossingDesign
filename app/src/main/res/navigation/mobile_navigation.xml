@@ -22,4 +22,21 @@
         android:name="com.example.animalcrossingdesign.ui.create.CreateFragment"
         android:label="@string/menu_create"
         tools:layout="@layout/fragment_create" />
+
+    <!--Firebase login stuff-->
+    <fragment
+        android:id="@+id/mainLoginFragment"
+        android:name="com.example.animalcrossingdesign.firebaseuiloginsample.MainFragment"
+        android:label="MainLoginFragment">
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.animalcrossingdesign.firebaseuiloginsample.SettingsFragment"
+        android:label="fragment_settings">
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.animalcrossingdesign.firebaseuiloginsample.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login"/>
 </navigation>

@@ -163,6 +163,7 @@ class CreateFragment : Fragment() {
 
         }
 
+        /*
         // Create onClickListener for button to create QR code
         val createQRButton2: Button = root.findViewById(R.id.createQRButton2)
         createQRButton2.setOnClickListener {
@@ -241,7 +242,7 @@ class CreateFragment : Fragment() {
                     println("fix this")
                 }
             // End testing
-        }
+        }*/
 
         // Create onClickListener for button to zoom on qr code
         val qrCloseUp: Button = root.findViewById(R.id.QRCloseup)

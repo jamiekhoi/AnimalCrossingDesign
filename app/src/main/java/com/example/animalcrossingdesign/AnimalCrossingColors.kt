@@ -18,8 +18,8 @@ class AnimalCrossingQRObject {
     var title: String
     var author: String
     var town: String
-    var colorPalettePositions: ByteArray
-    private var imagePixelsBETA: List<Int>
+    var colorPalettePositions: List<Int>
+    private var imagePixels: List<Int>
     var imagePositionByteData: ByteArray
 
     companion object {
@@ -216,11 +216,11 @@ class AnimalCrossingQRObject {
         this.title = title.joinToString(separator = "", transform = { it.toChar().toString() })
         this.author = author.joinToString(separator = "", transform = { it.toChar().toString() })
         this.town = town.joinToString(separator = "", transform = { it.toChar().toString() })
-        this.colorPalettePositions = colorPalettePositions
+        this.colorPalettePositions = colorPalettePositions.toList().map { it.toInt() }
         this.imagePositionByteData = imageData
         //this.imagePixels = getPixelColorsFromBytes(imageData).map { animalCrossingPalettePositionToColorMap[this.colorPalettePositions[it]]!! }.toIntArray()
         //setImagePixels(getPixelColorsFromBytes(imageData).toIntArray())
-        imagePixelsBETA = getPixelColorsFromBytes(imageData)
+        imagePixels = getPixelColorsFromBytes(imageData)
     }
 
     constructor(convertedBitmap: Bitmap,
@@ -238,9 +238,9 @@ class AnimalCrossingQRObject {
         val tempIntArray = IntArray(convertedBitmap.width * convertedBitmap.height)
         convertedBitmap.getPixels(tempIntArray, 0, convertedBitmap.width, 0, 0, convertedBitmap.width, convertedBitmap.height);
         //setImagePixels(tempIntArray)
-        imagePixelsBETA = tempIntArray.toList()
+        imagePixels = tempIntArray.toList()
 
-        var tmpPalette = imagePixelsBETA.toIntArray().distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
+        var tmpPalette = imagePixels.toIntArray().distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
         for (el in animalCrossingPaletteColorToPositionMap.values) {
             if (tmpPalette.size >= PALETTE_MAX) {
                 break
@@ -252,9 +252,9 @@ class AnimalCrossingQRObject {
         if (tmpPalette.size > PALETTE_MAX) {
             throw ACObjectCreationException("Error in ACObject class palette assignment")
         }
-        this.colorPalettePositions = tmpPalette
+        this.colorPalettePositions = tmpPalette.toList().map { it.toInt() }
 
-        this.imagePositionByteData = pixelsToPositionByteData(imagePixelsBETA.toIntArray(), this.colorPalettePositions)
+        this.imagePositionByteData = pixelsToPositionByteData(imagePixels.toIntArray(), this.colorPalettePositions.map { it.toByte() }.toByteArray())
     }
 
     /*fun getImagePixels1(): IntArray {
@@ -281,7 +281,7 @@ class AnimalCrossingQRObject {
         /*
         Todo: use this in the constructors and make this a class member
          */
-        return allDataToQRByteArray(imagePixelsBETA.toIntArray(), colorPalettePositions, title, author, town)
+        return allDataToQRByteArray(imagePixels.toIntArray(), colorPalettePositions.map { it.toByte() }.toByteArray(), title, author, town)
     }
 
     private fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {
@@ -317,8 +317,8 @@ class AnimalCrossingQRObject {
         for (byte in bytes) {
             val firstHalf = (byte.toInt() shr 4) and 0x0f
             val secondHalf = byte.toInt() and 0x0f
-            arrayListOfPixels.add(animalCrossingPalettePositionToColorMap[this.colorPalettePositions[firstHalf]]!!)
-            arrayListOfPixels.add(animalCrossingPalettePositionToColorMap[this.colorPalettePositions[secondHalf]]!!)
+            arrayListOfPixels.add(animalCrossingPalettePositionToColorMap[this.colorPalettePositions[firstHalf].toByte()]!!)
+            arrayListOfPixels.add(animalCrossingPalettePositionToColorMap[this.colorPalettePositions[secondHalf].toByte()]!!)
         }
         return arrayListOfPixels
     }

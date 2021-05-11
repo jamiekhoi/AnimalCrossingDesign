@@ -20,7 +20,7 @@ class AnimalCrossingQRObject {
     var town: String
     var colorPalettePositions: List<Int>
     private var imagePixels: List<Int>
-    var imagePositionByteData: ByteArray
+    var imagePositionByteData: List<Int>
 
     companion object {
         // TODO: Put animalCrossingPalettePositionToColorMap and animalCrossingPaletteColorToPositionMap in here
@@ -217,7 +217,7 @@ class AnimalCrossingQRObject {
         this.author = author.joinToString(separator = "", transform = { it.toChar().toString() })
         this.town = town.joinToString(separator = "", transform = { it.toChar().toString() })
         this.colorPalettePositions = colorPalettePositions.toList().map { it.toInt() }
-        this.imagePositionByteData = imageData
+        this.imagePositionByteData = imageData.toList().map { it.toInt() }
         //this.imagePixels = getPixelColorsFromBytes(imageData).map { animalCrossingPalettePositionToColorMap[this.colorPalettePositions[it]]!! }.toIntArray()
         //setImagePixels(getPixelColorsFromBytes(imageData).toIntArray())
         imagePixels = getPixelColorsFromBytes(imageData)
@@ -254,7 +254,7 @@ class AnimalCrossingQRObject {
         }
         this.colorPalettePositions = tmpPalette.toList().map { it.toInt() }
 
-        this.imagePositionByteData = pixelsToPositionByteData(imagePixels.toIntArray(), this.colorPalettePositions.map { it.toByte() }.toByteArray())
+        this.imagePositionByteData = pixelsToPositionByteData(imagePixels.toIntArray(), this.colorPalettePositions.map { it.toByte() }.toByteArray()).toList().map { it.toInt() }
     }
 
     /*fun getImagePixels1(): IntArray {

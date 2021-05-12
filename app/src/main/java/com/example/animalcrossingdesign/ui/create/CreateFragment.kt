@@ -27,11 +27,9 @@ import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import java.lang.Exception
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.*
 import kotlin.math.pow
 
 
@@ -49,6 +47,8 @@ class CreateFragment : Fragment() {
 
     private val PICK_IMAGE = 100
     private val CROP_IMAGE = 101
+    private val THE_WHOLE_ENCHILADA_PICK_IMAGE = 411
+    private val THE_WHOLE_ENCHILADA_CROP_IMAGE = 412
 
     private var imageUri: Uri? = null
 
@@ -120,7 +120,7 @@ class CreateFragment : Fragment() {
         val cropButton: Button = root.findViewById(R.id.cropButton)
         cropButton.setOnClickListener {
             // Crop image from imageview
-            imageUri?.let { it1 -> performCrop(it1) }
+            imageUri?.let { it1 -> performCrop(it1, CROP_IMAGE) }
         }
 
         // Create onClickListener for button to downscale image
@@ -161,123 +161,6 @@ class CreateFragment : Fragment() {
 
             saveToFirebaseFireStore(QRObject)
 
-        }
-
-        /*
-        // Create onClickListener for button to create QR code
-        val createQRButton2: Button = root.findViewById(R.id.createQRButton2)
-        createQRButton2.setOnClickListener {
-            // Testing NOT WORKING
-            // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
-            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
-            val options = BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    Barcode.FORMAT_QR_CODE)
-                .build()
-            val scanner = BarcodeScanning.getClient(options)
-            val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
-                .addOnSuccessListener { barcodes ->
-                    // Task completed successfully
-                    // ...
-                    println("nr of barcodes: ")
-                    println(barcodes.size)
-
-                    var1 = barcodes[0].rawBytes!!
-
-                    val QRObject = AnimalCrossingQRObject(barcodes[0].rawBytes!!)
-                    val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
-                    newBitmap.setPixels(QRObject.getImagePixels(), 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
-                    //val QRCodeBitmap = AnimalCrossingQRObject.generateQRCodeFromBitmap(newBitmap, QRObject.colorPalettePositions)
-                    // QRObject.toRawBytes == var1
-
-                    val rawbytestest = QRObject.toQRRawBytes()
-                    println("var1: ${var1.size}")
-                    println("qrobjectrawbytes: ${rawbytestest.size}")
-                    for (i in var1.indices) {
-                        if (var1[i] != rawbytestest[i]) {
-                            println("(${i.toString(16)}) ($i) ---- ${var1[i]} : ${rawbytestest[i]}")
-                        }
-                    }
-
-                    val QRCodeBitmap = QRObject.toQRBitmap()
-                    //NB TESTING
-                    imageView.setImageBitmap(QRCodeBitmap)
-                    // END TESTING
-                    val myImage = InputImage.fromBitmap(QRCodeBitmap, 0)
-                    val newOptions = BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(
-                            Barcode.FORMAT_QR_CODE)
-                        .build()
-                    val newScanner = BarcodeScanning.getClient(newOptions)
-                    val result = newScanner.process(myImage) // TODO: debugging not going inside onSuccessListener. Why?
-                        .addOnSuccessListener { barcodes2 ->
-                            // Task completed successfully
-                            // ...
-                            var2 = barcodes2[0].rawBytes!!
-                            println("nr of barcodes: ")
-                            println(barcodes2.size)
-                            println("var1: ${var1.size}")
-                            println("var2: ${var2.size}")
-                            for (i in var1.indices) {
-                                if (var1[i] != var2[i]) {
-                                    var1[i]
-                                    var2[i]
-                                    println("(${i.toString(16)}) ($i) ---- ${var1[i]} : ${rawbytestest[i]}")
-                                    println("hello")
-                                }
-                            }
-                            val abc = barcodes2[0].rawBytes!!
-                        }
-                        .addOnFailureListener {
-                            // Task failed with an exception
-                            // ...
-                            println("Scanner failed")
-                            println("fix this")
-                        }
-                }
-                .addOnFailureListener {
-                    // Task failed with an exception
-                    // ...
-                    println("Scanner failed")
-                    println("fix this")
-                }
-            // End testing
-        }*/
-
-        // Create onClickListener for button to zoom on qr code
-        val qrCloseUp: Button = root.findViewById(R.id.QRCloseup)
-        qrCloseUp.setOnClickListener {
-            val origbitmap = imageView.drawable.toBitmap()
-            //Bitmap.crea
-            // Read Qr code: val rawBytes = readQR(imageView.drawable.toBitmap())
-            val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
-            val options = BarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(
-                            Barcode.FORMAT_QR_CODE)
-                    .build()
-            val scanner = BarcodeScanning.getClient(options)
-            val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
-                    .addOnSuccessListener { barcodes ->
-                        // Task completed successfully
-                        // ...
-                        println("nr of barcodes: ")
-                        println(barcodes.size)
-
-                        var1 = barcodes[0].rawBytes!!
-
-                        for (barcode in barcodes) {
-                            barcode
-                            //val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
-                            //newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
-                            val box = barcode.getBoundingBox()
-                            val newbitmap = Bitmap.createBitmap(imageView.drawable.toBitmap(),
-                                    box.left-0, box.top-0, box.width(), box.height())
-                            imageView.setImageBitmap(newbitmap)
-
-                            barcode
-                        }
-                    // END TESTING
-                    }
         }
 
         // Connect the imageview
@@ -325,7 +208,49 @@ class CreateFragment : Fragment() {
             //imageView.setImageBitmap(convertedbmp)
         }
 
+        // Create onClickListener
+        val theWholeEnchilada: Button = root.findViewById(R.id.theWholeEnchilada)
+        theWholeEnchilada.setOnClickListener {
+            /*
+            Do everything
+             */
+            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+            startActivityForResult(gallery, THE_WHOLE_ENCHILADA_PICK_IMAGE)
+
+        }
+
         return root
+    }
+
+    private fun QRCodeCloseup() {
+        val image = InputImage.fromBitmap(imageView.drawable.toBitmap(), 0)
+        val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(
+                Barcode.FORMAT_QR_CODE)
+            .build()
+        val scanner = BarcodeScanning.getClient(options)
+        val result = scanner.process(image) // TODO: debugging not going inside onSuccessListener. Why?
+            .addOnSuccessListener { barcodes ->
+                // Task completed successfully
+                // ...
+                println("nr of barcodes: ")
+                println(barcodes.size)
+
+                var1 = barcodes[0].rawBytes!!
+
+                for (barcode in barcodes) {
+                    barcode
+                    //val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
+                    //newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
+                    val box = barcode.getBoundingBox()
+                    val newbitmap = Bitmap.createBitmap(imageView.drawable.toBitmap(),
+                        box.left-0, box.top-0, box.width(), box.height())
+                    imageView.setImageBitmap(newbitmap)
+
+                    barcode
+                }
+                // END TESTING
+            }
     }
 
     private fun saveToFirebaseFireStore(qrObject: AnimalCrossingQRObject) {
@@ -478,7 +403,7 @@ class CreateFragment : Fragment() {
         customadapter.notifyDataSetChanged()
     }
 
-    private fun performCrop(picUri: Uri) {
+    private fun performCrop(picUri: Uri, requestCode: Int) {
         try {
             val cropIntent = Intent("com.android.camera.action.CROP")
             // indicate image type and Uri
@@ -497,7 +422,7 @@ class CreateFragment : Fragment() {
             // retrieve data on return
             cropIntent.putExtra("return-data", true)
             // start the activity - we handle returning in onActivityResult
-            startActivityForResult(cropIntent, CROP_IMAGE)//PIC_CROP)
+            startActivityForResult(cropIntent, requestCode)//PIC_CROP)
         } // respond to users whose devices do not support the crop action
         catch (anfe: ActivityNotFoundException) {
             // display an error message
@@ -560,11 +485,35 @@ class CreateFragment : Fragment() {
 
                 // Crop image
                 if(crop_switch.isChecked){
-                    imageUri?.let { performCrop(it) }
+                    imageUri?.let { performCrop(it, CROP_IMAGE) }
                     Toast.makeText(activity, "Cropping!", Toast.LENGTH_SHORT).show()
                 }else{
                     Toast.makeText(activity, "Not cropping!", Toast.LENGTH_SHORT).show()
                 }
+
+            }
+            else if(requestCode == THE_WHOLE_ENCHILADA_PICK_IMAGE){
+                imageUri = data?.data
+                imageUri?.let { performCrop(it, THE_WHOLE_ENCHILADA_CROP_IMAGE) }
+
+            }
+            else if(requestCode == THE_WHOLE_ENCHILADA_CROP_IMAGE){
+                val bundle: Bundle? = data?.extras
+                val bitmap: Bitmap? = data?.getParcelableExtra<Bitmap>("data")
+
+                val scaledBitmap = Bitmap.createScaledBitmap(bitmap!!,
+                    animalCrossingDesignWidth,
+                    animalCrossingDesignHeight,
+                    true)
+
+                val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
+
+                val QRObject = AnimalCrossingQRObject(convertedbmp)
+                val QRCodeBitmap = QRObject.toQRBitmap()
+
+                imageView.setImageBitmap(QRCodeBitmap)
+
+                saveToFirebaseFireStore(QRObject)
 
             }
             else if(requestCode == CROP_IMAGE) {

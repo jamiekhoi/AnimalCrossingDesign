@@ -39,34 +39,15 @@ class GalleryFragment : Fragment() {
         //    textView.text = it
         //})
 
-        val galleryRecyclerView: RecyclerView = root.findViewById(R.id.galleryRecyclerView)
         //galleryRecyclerView.isNestedScrollingEnabled = false
         val galleryFireStoreDesignRecyclerView: RecyclerView = root.findViewById(R.id.galleryFireStoreDesignRecyclerView)
 
         // Creates a vertical GridLayoutManager
         val gridlayoutmanger = GridLayoutManager(root.context, 3)
         val gridfirestorelayoutmanger = GridLayoutManager(root.context, 3)
-        galleryRecyclerView.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
         galleryFireStoreDesignRecyclerView.layoutManager = gridfirestorelayoutmanger
 
         // Access the RecyclerView Adapter and load the data into it
-        val animalImages = arrayListOf(R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster,
-                R.drawable.nh_dizzy_poster)
-        val galleryAdapter = GalleryAdapter(animalImages)
-        galleryRecyclerView.adapter = galleryAdapter
-
         val designPreviews = arrayListOf<Bitmap>()
         val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews)
         galleryFireStoreDesignRecyclerView.adapter = fireStoreDesignAdapter

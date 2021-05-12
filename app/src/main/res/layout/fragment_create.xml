@@ -102,10 +102,10 @@
                     android:text="Create QR Code" />
 
                 <Button
-                    android:id="@+id/createQRButton2"
+                    android:id="@+id/theWholeEnchilada"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create QR Code v2" />
+                    android:text="The Whole Enchilada" />
 
                 <Button
                     android:id="@+id/QRCloseup"

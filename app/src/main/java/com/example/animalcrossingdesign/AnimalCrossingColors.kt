@@ -19,7 +19,7 @@ class AnimalCrossingQRObject {
     var author: String
     var town: String
     var colorPalettePositions: List<Int>
-    private var imagePixels: List<Int>
+    var imagePixels: List<Int>
     var imagePositionByteData: List<Int>
 
     companion object {

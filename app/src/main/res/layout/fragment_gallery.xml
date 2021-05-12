@@ -14,45 +14,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-        </Button>
-
-        <Button
-            android:id="@+id/button4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="50dp"
-            android:text="Button" />
-
-        <Button
-            android:id="@+id/button5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="50dp"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="50dp"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="50dp"
-            android:text="Button" />
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/galleryFireStoreDesignRecyclerView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:clipToPadding="true"
@@ -60,46 +24,6 @@
 
         </androidx.recyclerview.widget.RecyclerView>
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/galleryRecyclerView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:clipToPadding="true"
-            >
-
-        </androidx.recyclerview.widget.RecyclerView>
-
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button" />
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

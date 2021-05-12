@@ -30,6 +30,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlin.math.min
 import kotlin.math.pow
 
 
@@ -45,7 +46,7 @@ class CreateFragment : Fragment() {
     //Todo: Is it bad to put root here instead of inside constructor?
     private lateinit var root: View
 
-    private val PICK_IMAGE = 100
+    private val PICK_THEN_CROP_IMAGE = 100
     private val CROP_IMAGE = 101
     private val THE_WHOLE_ENCHILADA_PICK_IMAGE = 411
     private val THE_WHOLE_ENCHILADA_CROP_IMAGE = 412
@@ -101,11 +102,11 @@ class CreateFragment : Fragment() {
         }
 
         // Create onClickListener for button to choose image
-        val pickImageButton: Button = root.findViewById(R.id.pickImageButton)
-        pickImageButton.setOnClickListener {
+        val pickImageAndCropButton: Button = root.findViewById(R.id.pickImageAndCropButton)
+        pickImageAndCropButton.setOnClickListener {
             // Pick image
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(gallery, PICK_IMAGE)
+            startActivityForResult(gallery, PICK_THEN_CROP_IMAGE)
         }
 
         // Create onClickListener for button to splitimage
@@ -116,22 +117,6 @@ class CreateFragment : Fragment() {
             splitImage()
         }
 
-        // Create onClickListener for button to crop image
-        val cropButton: Button = root.findViewById(R.id.cropButton)
-        cropButton.setOnClickListener {
-            // Crop image from imageview
-            imageUri?.let { it1 -> performCrop(it1, CROP_IMAGE) }
-        }
-
-        // Create onClickListener for button to downscale image
-        val downscaleButton: Button = root.findViewById(R.id.downscaleButton)
-        downscaleButton.setOnClickListener {
-            // Downscale image from imageview
-            imageView.setImageBitmap(Bitmap.createScaledBitmap(imageView.drawable.toBitmap(),
-                    animalCrossingDesignWidth,
-                    animalCrossingDesignHeight,
-                    true))
-        }
 
         // Create onClickListener for button to convert to animal crossing colors
         val changeColorButton: Button = root.findViewById(R.id.changeColorButton)
@@ -141,33 +126,10 @@ class CreateFragment : Fragment() {
             imageView.setImageBitmap(convertedbmp)
         }
 
-        // Create onClickListener for button to convert to animal crossing colors
-        val changeColorButton2: Button = root.findViewById(R.id.changeColorButton2)
-        changeColorButton2.setOnClickListener {
-            // Change colors to animal crossing colors
-            val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "contrast")
-            //imageView.setImageBitmap(convertedbmp)
-        }
 
-        // Create onClickListener for button to create QR code
-        val createQRButton: Button = root.findViewById(R.id.createQRButton)
-        createQRButton.setOnClickListener {
-            /*
-            Create qr code for image in imageview
-             */
-            val QRObject = AnimalCrossingQRObject(imageView.drawable.toBitmap())
-            val QRCodeBitmap = QRObject.toQRBitmap()
-            imageView.setImageBitmap(QRCodeBitmap)
-
-            saveToFirebaseFireStore(QRObject)
-
-        }
 
         // Connect the imageview
         imageView = root.findViewById(R.id.imageView)
-
-        // Connect the crop_switch
-        crop_switch = root.findViewById(R.id.crop_switch)
 
         // Create adapter for
         // val split_images: MutableList<Bitmap> = arrayListOf()
@@ -471,29 +433,24 @@ class CreateFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
-            if(requestCode == PICK_IMAGE) {
+            if(requestCode == PICK_THEN_CROP_IMAGE) {
                 println(data)
                 imageUri = data?.data
 
-                imageView.setImageURI(imageUri)
-                println("BEORFEFJDSOFIDJSOAIFDJSOIJFOIS")
-                println(data)
-                println(data?.extras)
-                println(imageUri)
-                print(data?.data.toString())
-                println("AFTEREKARFJDSJSAFKLDSAKFDJ")
-
+                // TODO: CROP using intent if the phone has it, if not crop to largest square
                 // Crop image
-                if(crop_switch.isChecked){
-                    imageUri?.let { performCrop(it, CROP_IMAGE) }
-                    Toast.makeText(activity, "Cropping!", Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(activity, "Not cropping!", Toast.LENGTH_SHORT).show()
-                }
+                imageView.setImageURI(imageUri) // Set this in case crop intent fails
+                performCrop(imageUri!!, CROP_IMAGE)
+                //Toast.makeText(activity, "Cropping!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(activity, "Not cropping!", Toast.LENGTH_SHORT).show()
 
             }
             else if(requestCode == THE_WHOLE_ENCHILADA_PICK_IMAGE){
+
                 imageUri = data?.data
+
+                // TODO: CROP using intent if the phone has it, if not crop to largest square
+                imageView.setImageURI(imageUri) // Set this in case crop intent fails
                 imageUri?.let { performCrop(it, THE_WHOLE_ENCHILADA_CROP_IMAGE) }
 
             }
@@ -501,36 +458,13 @@ class CreateFragment : Fragment() {
                 val bundle: Bundle? = data?.extras
                 val bitmap: Bitmap? = data?.getParcelableExtra<Bitmap>("data")
 
-                val scaledBitmap = Bitmap.createScaledBitmap(bitmap!!,
-                    animalCrossingDesignWidth,
-                    animalCrossingDesignHeight,
-                    true)
-
-                val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
-
-                val QRObject = AnimalCrossingQRObject(convertedbmp)
-                val QRCodeBitmap = QRObject.toQRBitmap()
-
-                imageView.setImageBitmap(QRCodeBitmap)
-
-                saveToFirebaseFireStore(QRObject)
+                scaleBitmap_convertBitmap_createQR_saveFireStore(bitmap!!)
 
             }
             else if(requestCode == CROP_IMAGE) {
-                println("activity result crop image")
-                println(data)
-                println(data?.data)
-                println(data?.extras)
-                println(data?.extras.toString())
-                println(data?.extras)
-
                 val bundle: Bundle? = data?.extras
-                println("Categories!!!!!!!!!!1")
-                println(data)
-
                 val bitmap: Bitmap? = data?.getParcelableExtra<Bitmap>("data")
 
-                //////////////////////////
                 imageView.setImageBitmap(bitmap)
 
                 if (bundle != null) {
@@ -544,5 +478,44 @@ class CreateFragment : Fragment() {
 
             }
         }
+        else{
+            println(resultCode)
+            if(requestCode == CROP_IMAGE) {
+                val bitmap = imageView.drawable.toBitmap()
+                imageViewBitmapAutoCrop(bitmap)
+            }
+            else if(requestCode == THE_WHOLE_ENCHILADA_CROP_IMAGE){
+                val bitmap = imageView.drawable.toBitmap()
+                val croppedBitmap = imageViewBitmapAutoCrop(bitmap)
+
+                scaleBitmap_convertBitmap_createQR_saveFireStore(croppedBitmap)
+
+            }
+        }
+    }
+
+    private fun imageViewBitmapAutoCrop(bitmap: Bitmap): Bitmap {
+        val minLength = if (bitmap.width < bitmap.height) bitmap.width else bitmap.height
+        val croppedBitmap = Bitmap.createBitmap(bitmap, 0, 0, minLength, minLength)
+        imageView.setImageBitmap(croppedBitmap)
+        return croppedBitmap
+    }
+
+    private fun scaleBitmap_convertBitmap_createQR_saveFireStore(croppedBitmap: Bitmap) {
+        val scaledBitmap = Bitmap.createScaledBitmap(
+            croppedBitmap,
+            animalCrossingDesignWidth,
+            animalCrossingDesignHeight,
+            true
+        )
+
+        val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
+
+        val QRObject = AnimalCrossingQRObject(convertedbmp)
+        val QRCodeBitmap = QRObject.toQRBitmap()
+
+        imageView.setImageBitmap(QRCodeBitmap)
+
+        saveToFirebaseFireStore(QRObject)
     }
 }

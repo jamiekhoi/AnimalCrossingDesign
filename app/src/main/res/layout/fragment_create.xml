@@ -42,7 +42,6 @@
                 android:layout_marginBottom="32dp"
                 android:textAlignment="center"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/pickImageButton"
                 tools:layout_editor_absoluteX="27dp" />
 
 
@@ -53,17 +52,10 @@
                 android:orientation="vertical">
 
                 <Button
-                    android:id="@+id/pickImageButton"
+                    android:id="@+id/pickImageAndCropButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Pick Image" />
-
-                <Switch
-                    android:id="@+id/crop_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Crop"
-                    tools:checked="true" />
+                    android:text="Pick Image and Crop" />
 
                 <Button
                     android:id="@+id/splitImageButton"
@@ -72,34 +64,10 @@
                     android:text="Split Image" />
 
                 <Button
-                    android:id="@+id/cropButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Crop" />
-
-                <Button
-                    android:id="@+id/downscaleButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Downscale" />
-
-                <Button
                     android:id="@+id/changeColorButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Convert to animal crossing colors rgb" />
-
-                <Button
-                    android:id="@+id/changeColorButton2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Convert to animal crossing colors contrast" />
-
-                <Button
-                    android:id="@+id/createQRButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Create QR Code" />
 
                 <Button
                     android:id="@+id/theWholeEnchilada"
@@ -107,11 +75,6 @@
                     android:layout_height="wrap_content"
                     android:text="The Whole Enchilada" />
 
-                <Button
-                    android:id="@+id/QRCloseup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="View only QR Code" />
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout

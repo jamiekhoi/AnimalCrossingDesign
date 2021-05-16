@@ -30,6 +30,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.firebase.ui.auth.AuthUI
+import com.google.firebase.auth.ktx.auth
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -219,14 +222,20 @@ class CreateFragment : Fragment() {
         // Add a new document with a generated ID
         // TODO: Fix authentication so only logged in users can read/write
         //db.document("users/" + FirebaseAuth.getInstance().currentUser.uid).collection("users")
-        db.collection("designObjects")
-            .add(qrObject)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding document", e)
-            }
+        val user = Firebase.auth.currentUser
+        if (user != null) {
+            // User is signed in
+            db.collection("users").document(user.email)
+                .collection("designs").add(qrObject)
+                .addOnSuccessListener { documentReference ->
+                    Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Error adding document", e)
+                }        } else {
+                    // No user is signed in
+                    print("")
+                }
     }
 
     private fun getEuclideanSRGBDistance(color1: Color, color2: Color): Double {

@@ -1,5 +1,6 @@
 package com.example.animalcrossingdesign.ui.gallery
 
+import android.content.ContentValues
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.R
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -51,28 +53,33 @@ class GalleryFragment : Fragment() {
         val designPreviews = arrayListOf<Bitmap>()
         val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews)
         galleryFireStoreDesignRecyclerView.adapter = fireStoreDesignAdapter
-        db.collection("designObjects")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    Log.d(TAG, "${document.id} => ${document.data}")
 
-                    document.data["imagePixels"].let {
-                        val imagePixels = (it as List<Long>).map { el -> el.toInt() }.toIntArray()
-                        designPreviews.add(Bitmap.createBitmap(imagePixels,
-                            0,
-                            animalCrossingDesignWidth,
-                            animalCrossingDesignWidth,
-                            animalCrossingDesignHeight,
-                            Bitmap.Config.ARGB_8888))
-                        fireStoreDesignAdapter.notifyDataSetChanged()
+        val user = Firebase.auth.currentUser
+        if (user != null) {
+            db.collection("users").document(user.email)
+                .collection("designs").get()
+                .addOnSuccessListener { result ->
+                    for (document in result) {
+                        Log.d(TAG, "${document.id} => ${document.data}")
 
+                        document.data["imagePixels"].let {
+                            val imagePixels = (it as List<Long>).map { el -> el.toInt() }.toIntArray()
+                            designPreviews.add(Bitmap.createBitmap(imagePixels,
+                                0,
+                                animalCrossingDesignWidth,
+                                animalCrossingDesignWidth,
+                                animalCrossingDesignHeight,
+                                Bitmap.Config.ARGB_8888))
+                            fireStoreDesignAdapter.notifyDataSetChanged()
+
+                        }
                     }
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.d(TAG, "Error getting documents: ", exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "Error getting documents: ", exception)
+                }
+        }
+
         return root
     }
 }

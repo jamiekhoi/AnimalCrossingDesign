@@ -70,7 +70,8 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-firestore-ktx:21.6.0'
 
-    implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
+    implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
+    implementation 'com.google.firebase:firebase-auth-ktx'
 
     //
     implementation 'com.android.support:multidex:1.0.1'

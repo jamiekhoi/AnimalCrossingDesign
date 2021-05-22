@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.R
 
@@ -24,6 +25,9 @@ class FireStoreDesignAdapter(private val dataSet: ArrayList<Bitmap>) :
             // Define click listener for the ViewHolder's View.
             //textView = view.findViewById(R.id.textViewGrid)
             imageView = view.findViewById(R.id.gallery_design_grid_view)
+            imageView.setOnClickListener {view ->
+                view.findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
+            }
         }
     }
 

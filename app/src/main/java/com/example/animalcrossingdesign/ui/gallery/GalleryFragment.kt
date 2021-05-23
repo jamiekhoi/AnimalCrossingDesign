@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.R
+import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -25,6 +26,7 @@ class GalleryFragment : Fragment() {
         private val animalCrossingDesignHeight = 32
     }
     private lateinit var galleryViewModel: GalleryViewModel
+    private lateinit var fragmentGalleryBinding: FragmentGalleryBinding
 
     private val db = Firebase.firestore
 
@@ -35,18 +37,22 @@ class GalleryFragment : Fragment() {
     ): View? {
         galleryViewModel =
                 ViewModelProvider(this).get(GalleryViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_gallery, container, false)
-        //val textView: TextView = root.findViewById(R.id.text_gallery)
+
+        //val root = inflater.inflate(R.layout.fragment_gallery, container, false)
+        fragmentGalleryBinding = FragmentGalleryBinding.inflate(inflater, container, false)
+
+        //val textView: TextView = fragmentGalleryBinding.text_gallery
         //galleryViewModel.text.observe(viewLifecycleOwner, Observer {
         //    textView.text = it
         //})
 
         //galleryRecyclerView.isNestedScrollingEnabled = false
-        val galleryFireStoreDesignRecyclerView: RecyclerView = root.findViewById(R.id.galleryFireStoreDesignRecyclerView)
+
+        val galleryFireStoreDesignRecyclerView: RecyclerView = fragmentGalleryBinding.galleryFireStoreDesignRecyclerView
 
         // Creates a vertical GridLayoutManager
-        val gridlayoutmanger = GridLayoutManager(root.context, 3)
-        val gridfirestorelayoutmanger = GridLayoutManager(root.context, 3)
+        val gridlayoutmanger = GridLayoutManager(fragmentGalleryBinding.root.context, 3)
+        val gridfirestorelayoutmanger = GridLayoutManager(fragmentGalleryBinding.root.context, 3)
         galleryFireStoreDesignRecyclerView.layoutManager = gridfirestorelayoutmanger
 
         // Access the RecyclerView Adapter and load the data into it
@@ -80,6 +86,6 @@ class GalleryFragment : Fragment() {
                 }
         }
 
-        return root
+        return fragmentGalleryBinding.root
     }
 }

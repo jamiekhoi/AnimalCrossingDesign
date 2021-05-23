@@ -20,11 +20,11 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
-import android.widget.Button
 import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.example.animalcrossingdesign.databinding.ActivityMainBinding
+import com.example.animalcrossingdesign.databinding.AppBarMainBinding
 import com.example.animalcrossingdesign.firebaseuiloginsample.LoginViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
@@ -48,10 +48,15 @@ class MainActivity : AppCompatActivity() {
 
     val db = Firebase.firestore
 
+    private lateinit var activityMainBinding: ActivityMainBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(activityMainBinding.root)
+
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -83,8 +88,8 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        val navView: NavigationView = findViewById(R.id.nav_view)
+        val drawerLayout: DrawerLayout = activityMainBinding.drawerLayout
+        val navView: NavigationView = activityMainBinding.navView
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

@@ -28,6 +28,8 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
+import com.example.animalcrossingdesign.databinding.FragmentCreateBinding
+import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -40,6 +42,7 @@ import kotlin.math.pow
 class CreateFragment : Fragment() {
     private lateinit var customadapter: CustomAdapter
     private lateinit var createViewModel: CreateViewModel
+    private lateinit var fragmentCreateBinding: FragmentCreateBinding
 
     lateinit var imageView: ImageView
     private lateinit var crop_switch: Switch
@@ -77,16 +80,18 @@ class CreateFragment : Fragment() {
         createViewModel =
                 ViewModelProvider(this).get(CreateViewModel::class.java)
 
-        root = inflater.inflate(R.layout.fragment_create, container, false)
-        val textViewCreate: TextView = root.findViewById(R.id.text_create)
+        fragmentCreateBinding = FragmentCreateBinding.inflate(inflater, container, false)
+        //root = inflater.inflate(R.layout.fragment_create, container, false)
+
+        val textViewCreate: TextView = fragmentCreateBinding.textCreate
         createViewModel.text.observe(viewLifecycleOwner, Observer {
             textViewCreate.text = it
         })
 
         // Connect the row/column chooser
-        textViewRowCol = root.findViewById(R.id.textViewCols)
+        textViewRowCol = fragmentCreateBinding.textViewCols
         // Create onClickListener for button
-        val minusColsButton: ImageButton = root.findViewById(R.id.minusColsButton)
+        val minusColsButton: ImageButton = fragmentCreateBinding.minusColsButton
         minusColsButton.setOnClickListener {
             val amtCols = textViewRowCol.text.toString().toInt()
             if (amtCols > 1){
@@ -95,7 +100,7 @@ class CreateFragment : Fragment() {
             update_rows_columns()
         }
         // Create onClickListener for button
-        val plusColsButton: ImageButton = root.findViewById(R.id.plusColsButton)
+        val plusColsButton: ImageButton = fragmentCreateBinding.plusColsButton
         plusColsButton.setOnClickListener {
             val amtCols = textViewRowCol.text.toString().toInt()
             if (amtCols < 10){
@@ -105,7 +110,7 @@ class CreateFragment : Fragment() {
         }
 
         // Create onClickListener for button to choose image
-        val pickImageAndCropButton: Button = root.findViewById(R.id.pickImageAndCropButton)
+        val pickImageAndCropButton: Button = fragmentCreateBinding.pickImageAndCropButton
         pickImageAndCropButton.setOnClickListener {
             // Pick image
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
@@ -113,7 +118,7 @@ class CreateFragment : Fragment() {
         }
 
         // Create onClickListener for button to splitimage
-        val splitImageButton: Button = root.findViewById(R.id.splitImageButton)
+        val splitImageButton: Button = fragmentCreateBinding.splitImageButton
         splitImageButton.setOnClickListener {
             Toast.makeText(activity, "Splitting image!", Toast.LENGTH_SHORT).show()
             // Split image up
@@ -122,7 +127,7 @@ class CreateFragment : Fragment() {
 
 
         // Create onClickListener for button to convert to animal crossing colors
-        val changeColorButton: Button = root.findViewById(R.id.changeColorButton)
+        val changeColorButton: Button = fragmentCreateBinding.changeColorButton
         changeColorButton.setOnClickListener {
             // Change colors to animal crossing colors
             val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
@@ -132,7 +137,7 @@ class CreateFragment : Fragment() {
 
 
         // Connect the imageview
-        imageView = root.findViewById(R.id.imageView)
+        imageView = fragmentCreateBinding.imageView
 
         // Create adapter for
         // val split_images: MutableList<Bitmap> = arrayListOf()
@@ -140,11 +145,11 @@ class CreateFragment : Fragment() {
         split_images_hashmap = ArrayList<HashMap<String, Any>>()
 
 
-        recycleview = root.findViewById(R.id.recyclerView)
+        recycleview = fragmentCreateBinding.recyclerView
         // Creates a vertical Layout Manager
         //recycleview.layoutManager = LinearLayoutManager(root.context)
         // You can use GridLayoutManager if you want multiple columns. Enter the number of columns as a parameter.
-        val gridlayoutmanger = GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
+        val gridlayoutmanger = GridLayoutManager(fragmentCreateBinding.root.context, textViewRowCol.text.toString().toInt())
         recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
 
         // Access the RecyclerView Adapter and load the data into it
@@ -174,7 +179,7 @@ class CreateFragment : Fragment() {
         }
 
         // Create onClickListener
-        val theWholeEnchilada: Button = root.findViewById(R.id.theWholeEnchilada)
+        val theWholeEnchilada: Button = fragmentCreateBinding.theWholeEnchilada
         theWholeEnchilada.setOnClickListener {
             /*
             Do everything
@@ -184,7 +189,7 @@ class CreateFragment : Fragment() {
 
         }
 
-        return root
+        return fragmentCreateBinding.root
     }
 
     private fun QRCodeCloseup() {

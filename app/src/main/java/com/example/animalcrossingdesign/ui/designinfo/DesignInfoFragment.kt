@@ -6,7 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import com.example.animalcrossingdesign.R
+import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
 
 class DesignInfoFragment : Fragment() {
 
@@ -14,7 +16,8 @@ class DesignInfoFragment : Fragment() {
         fun newInstance() = DesignInfoFragment()
     }
 
-    private lateinit var viewModel: DesignInfoViewModel
+    //private lateinit var viewModel: DesignInfoViewModel
+    private lateinit var viewModel: GalleryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,8 +29,20 @@ class DesignInfoFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(DesignInfoViewModel::class.java)
+        //viewModel = ViewModelProvider(this).get(DesignInfoViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
         // TODO: Use the ViewModel
+
+        viewModel.getList().observe(viewLifecycleOwner, Observer {
+            var temp = it
+        })
+        viewModel.text.observe(viewLifecycleOwner, Observer {
+            val temp = it
+        })
+
+        viewModel.mutablelivedatalist.observe(viewLifecycleOwner, Observer {
+            val temp = it
+        })
     }
 
 }

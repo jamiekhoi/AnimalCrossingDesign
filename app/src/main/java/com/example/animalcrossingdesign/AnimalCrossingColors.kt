@@ -1,9 +1,11 @@
 package com.example.animalcrossingdesign
 
 import android.graphics.Bitmap
+import com.example.animalcrossingdesign.ui.gallery.GalleryFragment
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import net.glxn.qrgen.android.QRCode
+import java.text.FieldPosition
 
 
 class ACObjectCreationException : RuntimeException {
@@ -11,6 +13,19 @@ class ACObjectCreationException : RuntimeException {
     constructor(message: String): super(message) {}
     constructor(ex: Exception): super(ex) {}
 }
+data class DesignDataClassSimple(var author: String = "",
+                                 var title: String = "",
+                                 var town: String = "",
+                                 var colorPalettePositions: List<Int> = emptyList(),
+                                 var imagePixels: List<Int> = emptyList(),
+                                 var imagePositionByteData: List<Int> = emptyList())
+
+data class DesignDataClass(val author: String,
+                           val title: String,
+                           val town: String,
+                           val colorPalettePositions: List<Int>,
+                           val imagePixels: List<Int>,
+                           val imagePositionByteData: List<Int>)
 
 class AnimalCrossingQRObject {
     val PALETTE_MAX = 15

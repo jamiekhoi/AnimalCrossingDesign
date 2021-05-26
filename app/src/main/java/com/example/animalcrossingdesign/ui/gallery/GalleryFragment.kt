@@ -9,14 +9,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.animalcrossingdesign.DesignDataClassSimple
 import com.example.animalcrossingdesign.R
 import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 
 class GalleryFragment : Fragment() {
@@ -35,6 +40,8 @@ class GalleryFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
+        //val testviewModel: GalleryViewModel by activityViewModels()
+
         galleryViewModel =
                 ViewModelProvider(this).get(GalleryViewModel::class.java)
 
@@ -56,29 +63,38 @@ class GalleryFragment : Fragment() {
         galleryFireStoreDesignRecyclerView.layoutManager = gridfirestorelayoutmanger
 
         // Access the RecyclerView Adapter and load the data into it
-        val designPreviews = arrayListOf<Bitmap>()
-        val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews)
+        val designPreviews = arrayListOf<DesignDataClassSimple>()
+        val fireStoreDesignAdapter = FireStoreDesignAdapter() {
+            findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
+        }
         galleryFireStoreDesignRecyclerView.adapter = fireStoreDesignAdapter
 
         val user = Firebase.auth.currentUser
         if (user != null) {
+
             db.collection("users").document(user.email)
                 .collection("designs").get()
                 .addOnSuccessListener { result ->
                     for (document in result) {
                         Log.d(TAG, "${document.id} => ${document.data}")
-
+                        val design = document.toObject<DesignDataClassSimple>()
+                        designPreviews.add(design)
+                        //fireStoreDesignAdapter.notifyDataSetChanged()
                         document.data["imagePixels"].let {
-                            val imagePixels = (it as List<Long>).map { el -> el.toInt() }.toIntArray()
-                            designPreviews.add(Bitmap.createBitmap(imagePixels,
-                                0,
-                                animalCrossingDesignWidth,
-                                animalCrossingDesignWidth,
-                                animalCrossingDesignHeight,
-                                Bitmap.Config.ARGB_8888))
-                            fireStoreDesignAdapter.notifyDataSetChanged()
-
+                            val imagePixels = (it as List<Long>).map { el -> el.toInt() }//.toIntArray()
+                            assert(imagePixels == design.imagePixels)
+                            //designPreviews.add(Bitmap.createBitmap(imagePixels.toIntArray(),
+                            //    0,
+                            //    animalCrossingDesignWidth,
+                            //    animalCrossingDesignWidth,
+                            //    animalCrossingDesignHeight,
+                            //    Bitmap.Config.ARGB_8888))
+                            //fireStoreDesignAdapter.notifyDataSetChanged()
                         }
+                        fireStoreDesignAdapter.data = designPreviews
+                        galleryViewModel.setList(designPreviews)
+                        
+
                     }
                 }
                 .addOnFailureListener { exception ->

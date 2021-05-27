@@ -33,14 +33,7 @@ class DesignInfoFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
         // TODO: Use the ViewModel
 
-        viewModel.getList().observe(viewLifecycleOwner, Observer {
-            var temp = it
-        })
         viewModel.text.observe(viewLifecycleOwner, Observer {
-            val temp = it
-        })
-
-        viewModel.mutablelivedatalist.observe(viewLifecycleOwner, Observer {
             val temp = it
         })
     }

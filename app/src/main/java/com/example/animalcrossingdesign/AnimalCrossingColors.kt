@@ -20,12 +20,6 @@ data class DesignDataClassSimple(var author: String = "",
                                  var imagePixels: List<Int> = emptyList(),
                                  var imagePositionByteData: List<Int> = emptyList())
 
-data class DesignDataClass(val author: String,
-                           val title: String,
-                           val town: String,
-                           val colorPalettePositions: List<Int>,
-                           val imagePixels: List<Int>,
-                           val imagePositionByteData: List<Int>)
 
 class AnimalCrossingQRObject {
     val PALETTE_MAX = 15

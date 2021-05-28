@@ -12,4 +12,8 @@ class GalleryViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
+    var pleasechange = MutableLiveData<String>().apply {
+        value = "not changed"
+    }
+
 }

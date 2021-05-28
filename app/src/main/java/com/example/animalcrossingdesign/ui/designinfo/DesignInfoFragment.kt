@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.example.animalcrossingdesign.R
 import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
@@ -30,11 +31,17 @@ class DesignInfoFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         //viewModel = ViewModelProvider(this).get(DesignInfoViewModel::class.java)
-        viewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
+        //viewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
+        val viewModel: GalleryViewModel by activityViewModels()
+
         // TODO: Use the ViewModel
 
         viewModel.text.observe(viewLifecycleOwner, Observer {
             val temp = it
+        })
+
+        viewModel.pleasechange.observe(viewLifecycleOwner, Observer {
+            val t = it
         })
     }
 

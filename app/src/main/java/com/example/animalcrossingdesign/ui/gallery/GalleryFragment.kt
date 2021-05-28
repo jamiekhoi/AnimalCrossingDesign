@@ -42,11 +42,30 @@ class GalleryFragment : Fragment() {
     ): View? {
         //val testviewModel: GalleryViewModel by activityViewModels()
 
-        galleryViewModel =
-                ViewModelProvider(this).get(GalleryViewModel::class.java)
+        //galleryViewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
+        val galleryViewModel: GalleryViewModel by activityViewModels()
 
         //val root = inflater.inflate(R.layout.fragment_gallery, container, false)
         fragmentGalleryBinding = FragmentGalleryBinding.inflate(inflater, container, false)
+
+        // Set the viewmodel for databinding - this allows the bound layout access
+        // to all the data in the VieWModel
+        fragmentGalleryBinding.galleryViewModel = galleryViewModel
+
+        // Specify the fragment view as the lifecycle owner of the binding.
+        // This is used so that the binding can observe LiveData updates
+        fragmentGalleryBinding.lifecycleOwner = viewLifecycleOwner
+
+        // Observer for the Game finished event
+        galleryViewModel.text.observe(viewLifecycleOwner, Observer {
+            val t = it
+        })
+
+        galleryViewModel.pleasechange.observe(viewLifecycleOwner, Observer {
+            val t = it
+        })
+
+        galleryViewModel.pleasechange.postValue("chagned")
 
         //val textView: TextView = fragmentGalleryBinding.text_gallery
         //galleryViewModel.text.observe(viewLifecycleOwner, Observer {

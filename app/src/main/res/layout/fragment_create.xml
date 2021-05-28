@@ -16,7 +16,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/create_main_imageView"
 
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

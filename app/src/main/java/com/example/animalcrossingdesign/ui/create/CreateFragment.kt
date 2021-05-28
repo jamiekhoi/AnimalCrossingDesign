@@ -137,7 +137,7 @@ class CreateFragment : Fragment() {
 
 
         // Connect the imageview
-        imageView = fragmentCreateBinding.imageView
+        imageView = fragmentCreateBinding.createMainImageView
 
         // Create adapter for
         // val split_images: MutableList<Bitmap> = arrayListOf()

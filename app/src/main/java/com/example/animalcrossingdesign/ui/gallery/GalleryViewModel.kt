@@ -16,4 +16,8 @@ class GalleryViewModel : ViewModel() {
         value = "not changed"
     }
 
+    var design = MutableLiveData<DesignDataClassSimple>().apply {
+        value = DesignDataClassSimple()
+    }
+
 }

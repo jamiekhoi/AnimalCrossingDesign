@@ -83,7 +83,7 @@ class GalleryFragment : Fragment() {
 
         // Access the RecyclerView Adapter and load the data into it
         val designPreviews = arrayListOf<DesignDataClassSimple>()
-        val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews)
+        val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews, galleryViewModel)
         galleryFireStoreDesignRecyclerView.adapter = fireStoreDesignAdapter
 
         val user = Firebase.auth.currentUser

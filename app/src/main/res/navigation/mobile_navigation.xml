@@ -30,7 +30,7 @@
     <fragment
         android:id="@+id/nav_design_detail"
         android:name="com.example.animalcrossingdesign.ui.designinfo.DesignInfoFragment"
-        android:label="fragment_design_info"
+        android:label="Design info"
         tools:layout="@layout/fragment_design_info" />
 
 

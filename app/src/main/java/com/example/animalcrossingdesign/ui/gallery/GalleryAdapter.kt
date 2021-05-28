@@ -12,7 +12,8 @@ import com.example.animalcrossingdesign.R
 import com.example.animalcrossingdesign.databinding.GalleryDesignGridItemViewBinding
 
 
-class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>):
+class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>,
+                             private val viewModel: GalleryViewModel):
     RecyclerView.Adapter<FireStoreDesignAdapter.ViewHolder>() {
     companion object {
         private val animalCrossingDesignWidth = 32
@@ -66,6 +67,7 @@ class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>)
         //viewHolder.bind(data[position])
         //viewHolder.imageView.setOnClickListener { onItemClicked_listener(item)}
         viewHolder.galleryItemBinding.galleryDesignGridViewImageview.setOnClickListener {
+            viewModel.design.postValue(item)
             viewHolder.itemView.findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
 
         }

@@ -50,7 +50,7 @@ class CreateFragment : Fragment() {
     private lateinit var textViewRowCol: TextView
     private lateinit var recycleview: RecyclerView
     //Todo: Is it bad to put root here instead of inside constructor?
-    private lateinit var root: View
+    //private lateinit var root: View
 
     private val PICK_THEN_CROP_IMAGE = 100
     private val CROP_IMAGE = 101
@@ -352,7 +352,7 @@ class CreateFragment : Fragment() {
 
     private fun update_rows_columns(){
         val amtCols = textViewRowCol.text.toString().toInt()
-        val gridlayoutmanger = GridLayoutManager(root.context, amtCols)
+        val gridlayoutmanger = GridLayoutManager(fragmentCreateBinding.root.context, amtCols)
         recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
         splitImage()
     }

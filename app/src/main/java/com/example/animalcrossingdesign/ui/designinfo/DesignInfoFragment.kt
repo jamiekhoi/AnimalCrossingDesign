@@ -48,11 +48,7 @@ class DesignInfoFragment : Fragment() {
             val t = it
         })
 
-        val textView: TextView = fragmentDesignInfoBinding.detailDesignTownTextView
-        textView.text = "first cahnge"
         viewModel.design.observe(viewLifecycleOwner, Observer {
-            val t = it
-
             fragmentDesignInfoBinding.detailDesignImageView.setImageBitmap(
                 Bitmap.createBitmap(it.imagePixels.toIntArray(),
                     0,
@@ -62,8 +58,8 @@ class DesignInfoFragment : Fragment() {
                     Bitmap.Config.ARGB_8888))
             fragmentDesignInfoBinding.detailDesignAuthorTextView.text = it.author
             fragmentDesignInfoBinding.detailDesignTownTextView.text = it.town
+            fragmentDesignInfoBinding.detailDesignTitleTextView.text = it.title
 
-            textView.text = "my new town"
         })
 
         return fragmentDesignInfoBinding.root

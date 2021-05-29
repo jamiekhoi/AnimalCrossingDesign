@@ -4,8 +4,6 @@ import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.DesignDataClassSimple
 import com.example.animalcrossingdesign.R
@@ -13,7 +11,9 @@ import com.example.animalcrossingdesign.databinding.GalleryDesignGridItemViewBin
 
 
 class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>,
-                             private val viewModel: GalleryViewModel):
+                             //private val viewModel: GalleryViewModel,
+                             private val listener: (v: View, item: DesignDataClassSimple) -> Unit
+):
     RecyclerView.Adapter<FireStoreDesignAdapter.ViewHolder>() {
     companion object {
         private val animalCrossingDesignWidth = 32
@@ -67,10 +67,12 @@ class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>,
         //viewHolder.bind(data[position])
         //viewHolder.imageView.setOnClickListener { onItemClicked_listener(item)}
         viewHolder.galleryItemBinding.galleryDesignGridViewImageview.setOnClickListener {
-            viewModel.design.postValue(item)
-            viewHolder.itemView.findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
-
+            // Todo make this listener external and reuse this class in home feed
+            //viewModel.design.postValue(item)
+            //it.findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
+            listener(it, item)
         }
+
         viewHolder.galleryItemBinding.galleryDesignGridViewImageview.setImageBitmap(Bitmap.createBitmap(item.imagePixels.toIntArray(),
                 0,
                 animalCrossingDesignWidth,

@@ -234,10 +234,25 @@ class CreateFragment : Fragment() {
                 .collection("designs").add(qrObject)
                 .addOnSuccessListener { documentReference ->
                     Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+
+                    db.collection("designs").document(documentReference.id)
+                        .set(qrObject)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                            // TODO: add field to this doc with user id for design
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error adding document", e)
+                        }
+
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "Error adding document", e)
-                }        } else {
+                }
+
+
+
+        } else {
                     // No user is signed in
                     print("")
                 }

@@ -3,6 +3,7 @@ package com.example.animalcrossingdesign.ui.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.animalcrossingdesign.DesignDataClassSimple
 
 class HomeViewModel : ViewModel() {
 
@@ -10,4 +11,8 @@ class HomeViewModel : ViewModel() {
         value = "This is home Fragment"
     }
     val text: LiveData<String> = _text
+
+    var design = MutableLiveData<DesignDataClassSimple>().apply {
+        value = DesignDataClassSimple()
+    }
 }

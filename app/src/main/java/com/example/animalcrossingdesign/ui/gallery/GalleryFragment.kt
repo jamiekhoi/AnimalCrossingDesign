@@ -1,19 +1,14 @@
 package com.example.animalcrossingdesign.ui.gallery
 
-import android.content.ContentValues
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.DesignDataClassSimple
@@ -52,6 +47,7 @@ class GalleryFragment : Fragment() {
         // to all the data in the VieWModel
         fragmentGalleryBinding.galleryViewModel = galleryViewModel
 
+        // TODO: find out how this works and if it's important
         // Specify the fragment view as the lifecycle owner of the binding.
         // This is used so that the binding can observe LiveData updates
         fragmentGalleryBinding.lifecycleOwner = viewLifecycleOwner
@@ -83,7 +79,11 @@ class GalleryFragment : Fragment() {
 
         // Access the RecyclerView Adapter and load the data into it
         val designPreviews = arrayListOf<DesignDataClassSimple>()
-        val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews, galleryViewModel)
+        val clicklistener =  { v: View, item: DesignDataClassSimple ->
+            galleryViewModel.design.postValue(item)
+            v.findNavController().navigate(R.id.action_nav_gallery_to_nav_design_detail)
+        }
+        val fireStoreDesignAdapter = FireStoreDesignAdapter(designPreviews, clicklistener)
         galleryFireStoreDesignRecyclerView.adapter = fireStoreDesignAdapter
 
         val user = Firebase.auth.currentUser
@@ -91,6 +91,7 @@ class GalleryFragment : Fragment() {
 
             db.collection("users").document(user.email)
                 .collection("designs").get()
+            //db.collection("users/james.k.giang@gmail.com/designs").get()
                 .addOnSuccessListener { result ->
                     for (document in result) {
                         Log.d(TAG, "${document.id} => ${document.data}")

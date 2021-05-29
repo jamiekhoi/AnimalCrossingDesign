@@ -37,7 +37,7 @@ class DesignInfoFragment : Fragment() {
         //viewModel = ViewModelProvider(this).get(DesignInfoViewModel::class.java)
         //viewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
         val viewModel: GalleryViewModel by activityViewModels()
-
+        //val viewModel: GalleryViewModel by activityViewModels()
         // TODO: Use the ViewModel
 
         viewModel.text.observe(viewLifecycleOwner, Observer {

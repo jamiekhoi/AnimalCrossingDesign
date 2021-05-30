@@ -29,13 +29,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import com.example.animalcrossingdesign.databinding.FragmentCreateBinding
-import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.ktx.auth
-import kotlin.math.min
 import kotlin.math.pow
 
 
@@ -71,6 +67,7 @@ class CreateFragment : Fragment() {
 
     private val db = Firebase.firestore
 
+    @ExperimentalStdlibApi
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -130,7 +127,8 @@ class CreateFragment : Fragment() {
         val changeColorButton: Button = fragmentCreateBinding.changeColorButton
         changeColorButton.setOnClickListener {
             // Change colors to animal crossing colors
-            val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
+            //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
+            val convertedbmp = convertBitmapMedianCut(imageView.drawable.toBitmap())
             imageView.setImageBitmap(convertedbmp)
         }
 
@@ -259,9 +257,9 @@ class CreateFragment : Fragment() {
     }
 
     private fun getEuclideanSRGBDistance(color1: Color, color2: Color): Double {
-        val redWeight = 0.3
-        val greenWeight = 0.59
-        val blueWeight = 0.11
+        val redWeight = 1//0.3
+        val greenWeight = 1//0.59
+        val blueWeight = 1//0.11
 
         return (
                 ((color2.red() - color1.red()) * redWeight).pow(2) +
@@ -291,6 +289,169 @@ class CreateFragment : Fragment() {
             }
         }
         return Pair(minDistanceColor, distanceList)
+    }
+
+    @ExperimentalStdlibApi
+    private fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
+        // assuming bitmap is 32x32 pixel bitmap
+        val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
+        bitmap.getPixels(arrayListOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+
+        val firstPixel = arrayListOfImageColors[0].toColor()
+        var red_min = firstPixel.red()
+        var red_max = firstPixel.red()
+        var green_min = firstPixel.green()
+        var green_max = firstPixel.green()
+        var blue_min = firstPixel.blue()
+        var blue_max = firstPixel.blue()
+        for (pixel in arrayListOfImageColors) {
+            //pixel.toColor().convert(ColorSpace.get(ColorSpace.Named.CIE_LAB))
+            val color = pixel.toColor()
+            if (color.red() < red_min) {
+                red_min = color.red()
+            } else if (color.red() > red_max) {
+                red_max = color.red()
+            }
+
+            if (color.green() < green_min) {
+                green_min = color.green()
+            } else if (color.green() > green_max) {
+                green_max = color.green()
+            }
+
+            if (color.blue() < blue_min) {
+                blue_min = color.blue()
+            } else if (color.blue() > blue_max) {
+                blue_max = color.blue()
+            }
+        }
+
+        var tempstring = ""
+        if ((red_max - red_min) > (green_max - green_min)) {
+            if ((red_max - red_min) > (blue_max - blue_min)) {
+                // Red is largest range
+                tempstring = "red"
+            } else {
+                // blue is largest range
+                tempstring = "blue"
+            }
+        } else {
+            if ((green_max - green_min) > (blue_max - blue_min)) {
+                // green is largest range
+                tempstring = "green"
+            } else {
+                // blue is largest range
+                tempstring = "blue"
+            }
+        }
+        // TODO: fix, this is hardcoded right now
+        val sortedPixels = arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
+
+        val pixelMax = 32*32
+        val paletteSize = 15
+        val bucketSize: Int = pixelMax/paletteSize
+        var i = 0
+        var ii = 0
+
+        val reducedARGBPalette: MutableList<Int> = mutableListOf()
+        while (i < bucketSize*paletteSize) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
+            println("i:  " + i + "/" + pixelMax)
+            println("ii: " + ii)
+            println()
+
+            val bucket = sortedPixels.toList().slice(i until (i + bucketSize))
+            // average colors in the bucket
+            val avg_red = (bucket.map { it.red() }.sum()) / bucket.size
+            val avg_green = (bucket.map { it.green() }.sum()) / bucket.size
+            val avg_blue = (bucket.map { it.blue() }.sum()) / bucket.size
+
+            val bucketColorAverage = Color.argb(1f, avg_red,avg_green,avg_blue)
+            reducedARGBPalette.add(bucketColorAverage)
+
+            i += pixelMax/paletteSize
+            ii += 1
+        }
+
+        val newPaletteBindings = paletteToACPalette(reducedARGBPalette)
+        val recoloredImagePixels:  IntArray = arrayListOfImageColors.map {
+            newPaletteBindings[it]!!
+        }.toList().toIntArray()
+
+        val newBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        newBitmap.setPixels(recoloredImagePixels, 0, bitmap.width, 0,0, bitmap.width, bitmap.height)
+
+        return newBitmap
+    }
+
+    @ExperimentalStdlibApi
+    fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
+        //    Returns a Hashmap<OldPaletteColor, NewACPaletteColor>
+
+        val acColors = AnimalCrossingQRObject.animalCrossingPalettePositionToColorMap.values
+
+        val colorDistances = HashMap<Int, MutableList<MutableMap.MutableEntry<Int, Double>>>()
+        for (old_color in palette) {
+            val acColorDistances = HashMap<Int, Double>()
+            for (acColor in acColors) {
+                // TODO check if getEuclideanSRGBDistance() is correct (white is not white)
+                val distance = getEuclideanSRGBDistance(old_color.toColor(), acColor.toColor())
+                acColorDistances[acColor] = distance
+            }
+            val sortedacColorDistances = acColorDistances.entries.sortedWith(compareBy { it.value })
+            colorDistances[old_color] = sortedacColorDistances.toMutableList()
+        }
+
+        // Assign new palette transformation
+        //val test: HashMap<Int, Int> // <Original_color, new_color>
+        val newColorBindings = HashMap<Int, Int>() //  <new_color, owner_color(original_color)>
+        for (old_color in colorDistances.keys) {
+            //helper variable
+            //val sortedacColorDistances = colorDistances[old_color]!!
+
+            fun setacColorToBinding(acColor_to_test: Int): Boolean {
+                if (newColorBindings.containsKey(acColor_to_test)){
+                    // Check that they are comparing distances against the same acColor
+                        //currentbindings shortest distance == current colors shortest distance
+                    assert(colorDistances[newColorBindings[acColor_to_test]]!![0].key == colorDistances[old_color]!![0].key )
+                    // check which one is the closer color
+                    val current_bound_color = colorDistances[newColorBindings[acColor_to_test]]!![0]// color_distances for current mapping
+                    val this_color = colorDistances[old_color]!![0]
+                    if (current_bound_color.value < this_color.value) { // Check their distances
+                        // check the next set
+                        return false
+                    } else {
+                        // Handle the previously bound color
+                        val color_to_handle = newColorBindings[acColor_to_test]!!
+                        val testOldSize = colorDistances[color_to_handle]!!.size
+                        colorDistances[color_to_handle]!!.removeFirst()
+                        val testNewSize = colorDistances[color_to_handle]!!.size
+                        assert(testNewSize == testOldSize-1)
+                        //if (newColorBindings.containsKey(colorDistances[color_to_handle]!![0].key)) {
+                        //}
+                        setacColorToBinding(colorDistances[color_to_handle]!![0].key)
+                        // Set the new binding
+                        newColorBindings[acColor_to_test] = old_color
+                        return true
+
+                    }
+
+                } else {
+                    newColorBindings[acColor_to_test] = old_color
+                    return true // is this right?
+                }
+            }
+            for (acColor in colorDistances[old_color]!!) { // change this into a for i in range type loop?
+                val colorIsSet = setacColorToBinding(acColor.key)
+                if (colorIsSet) {
+                    break
+                }
+            }
+
+        }
+
+        assert(newColorBindings.size == palette.size)
+
+        return newColorBindings.entries.associate { (key, value) -> value to key }
     }
 
     private fun convertBitmapToFitACPalette(bitmap: Bitmap, method: String = "rgb"): Bitmap{

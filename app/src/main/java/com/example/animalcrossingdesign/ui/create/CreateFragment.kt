@@ -403,52 +403,116 @@ class CreateFragment : Fragment() {
 
         // Assign new palette transformation
         //val test: HashMap<Int, Int> // <Original_color, new_color>
+        val versions = mutableListOf<HashMap<Int, Int>>()
         val newColorBindings = HashMap<Int, Int>() //  <new_color, owner_color(original_color)>
-        for (old_color in colorDistances.keys) {
-            //helper variable
-            //val sortedacColorDistances = colorDistances[old_color]!!
+        var counter = -1
+        fun setacColorToBinding(acColor_to_test: Int, currentOriginalColor: Int, level: String): Boolean {
+            /*
 
-            fun setacColorToBinding(acColor_to_test: Int): Boolean {
-                if (newColorBindings.containsKey(acColor_to_test)){
-                    // Check that they are comparing distances against the same acColor
-                        //currentbindings shortest distance == current colors shortest distance
-                    assert(colorDistances[newColorBindings[acColor_to_test]]!![0].key == colorDistances[old_color]!![0].key )
-                    // check which one is the closer color
-                    val current_bound_color = colorDistances[newColorBindings[acColor_to_test]]!![0]// color_distances for current mapping
-                    val this_color = colorDistances[old_color]!![0]
-                    if (current_bound_color.value < this_color.value) { // Check their distances
-                        // check the next set
-                        return false
-                    } else {
-                        // Handle the previously bound color
-                        val color_to_handle = newColorBindings[acColor_to_test]!!
-                        val testOldSize = colorDistances[color_to_handle]!!.size
-                        colorDistances[color_to_handle]!!.removeFirst()
-                        val testNewSize = colorDistances[color_to_handle]!!.size
-                        assert(testNewSize == testOldSize-1)
-                        //if (newColorBindings.containsKey(colorDistances[color_to_handle]!![0].key)) {
-                        //}
-                        setacColorToBinding(colorDistances[color_to_handle]!![0].key)
-                        // Set the new binding
-                        newColorBindings[acColor_to_test] = old_color
-                        return true
+             */
+            //println(colorDistances[currentOriginalColor]!![0].key)
+            //println(acColor_to_test)
+            counter += 1
+            println(level + "mmmmmmmmmmmmmmmmmmmmmmmmm" + counter.toString())
+            println(level + "ATTEMPT BIND $acColor_to_test to $currentOriginalColor")
 
-                    }
-
+            if (newColorBindings.containsKey(acColor_to_test)){
+                /*
+                If there is already a binding for this AC color
+                 */
+                // Check that they are comparing distances against the same acColor
+                //currentbindings shortest distance color == current colors shortest distance color
+                //
+                assert(colorDistances[newColorBindings[acColor_to_test]]!![0].key == acColor_to_test) // current binding
+                assert(colorDistances[currentOriginalColor]!![0].key == acColor_to_test) // to_test binding
+                assert(colorDistances[newColorBindings[acColor_to_test]]!![0].key == colorDistances[currentOriginalColor]!![0].key )
+                // check which one is the closer color
+                val current_bound_color = colorDistances[newColorBindings[acColor_to_test]]!![0]// color_distances for current mapping
+                val this_color = colorDistances[currentOriginalColor]!![0]
+                if (current_bound_color.value < this_color.value) { // Check their distances
+                    // check the next set
+                    println(level + "TRY NEXT")
+                    return false
                 } else {
-                    newColorBindings[acColor_to_test] = old_color
-                    return true // is this right?
+                    // Handle the previously bound color
+                    val t = 2
+
+                    // old binding
+                    val currentlyBoundOriginalColor_toHandle = newColorBindings[acColor_to_test]!!
+
+                    val testOldSize = colorDistances[currentlyBoundOriginalColor_toHandle]!!.size
+                    colorDistances[currentlyBoundOriginalColor_toHandle]!!.removeFirst()
+                    val testNewSize = colorDistances[currentlyBoundOriginalColor_toHandle]!!.size
+                    assert(testNewSize == testOldSize-1)
+
+                    // Try to set the new binding. should i do this earlier?
+                    newColorBindings[acColor_to_test] = currentOriginalColor
+                    versions.add(newColorBindings)
+
+                    //if (newColorBindings.containsKey(colorDistances[color_to_handle]!![0].key)) {
+                    //}
+                    //assert(colorDistances[color_to_handle]!![0].key == color_to_handl) // current binding
+                    println(level + "TRY RELOCATION")
+                    //println(colorDistances[currentlyBoundOriginalColor_toHandle]!![0].key)
+                    //println(currentlyBoundOriginalColor_toHandle)
+                    while (!setacColorToBinding(colorDistances[currentlyBoundOriginalColor_toHandle]!![0].key, currentlyBoundOriginalColor_toHandle, level+"---")) {
+                        println(level + "REMOVE FIRST INNER")
+                        colorDistances[currentlyBoundOriginalColor_toHandle]!!.removeFirst()
+                    }
+                    //setacColorToBinding(colorDistances[color_to_handle]!![0].key, color_to_handle)
+
+                    println(level + "SET REPLACE")
+                    println(level + "BOUND " + colorDistances[currentlyBoundOriginalColor_toHandle]!![0].key.toString() + " to " + currentlyBoundOriginalColor_toHandle.toString())
+                    return true
+
                 }
-            }
-            for (acColor in colorDistances[old_color]!!) { // change this into a for i in range type loop?
-                val colorIsSet = setacColorToBinding(acColor.key)
-                if (colorIsSet) {
-                    break
-                }
+
+            } else {
+                //newColorBindings[acColor_to_test] = old_color
+                newColorBindings[acColor_to_test] = currentOriginalColor
+                versions.add(newColorBindings)
+
+                println(level + "SET NEW")
+                return true // is this right?
             }
 
         }
 
+        for (old_color in colorDistances.keys) {
+            //helper variable
+            //val sortedacColorDistances = colorDistances[old_color]!!
+
+            /*while (!setacColorToBinding(colorDistances[old_color]!![0].key, old_color, "---")){
+                //wtf colorDistances[colorDistances[old_color]!![0].key]!!.removeFirst()
+                println("REMOVE FIRST OUTER")
+                colorDistances[old_color]!!.removeFirst()
+            }*/
+            while (true) {
+                val isSet = setacColorToBinding(colorDistances[old_color]!![0].key, old_color, "---")
+                if (isSet) {
+                    println("SET NEW MAIN")
+                    println("BOUND " + colorDistances[old_color]!![0].key.toString() + " to " + old_color.toString())
+                    break
+                } else {
+                    println("REMOVE FIRST OUTER")
+                    colorDistances[old_color]!!.removeFirst()
+                }
+            }
+
+            //for (acColor in colorDistances[old_color]!!) { // change this into a for i in range type loop?
+            //    val colorIsSet = setacColorToBinding(acColor.key, old_color)
+            //    if (colorIsSet) {
+            //        break
+            //    }
+            //}
+
+        }
+
+        for (version in versions) {
+            println(version)
+        }
+        println(versions.size)
+        println("SOSHELP!: " + newColorBindings.size.toString() + "/" + palette.size.toString())
         assert(newColorBindings.size == palette.size)
 
         return newColorBindings.entries.associate { (key, value) -> value to key }

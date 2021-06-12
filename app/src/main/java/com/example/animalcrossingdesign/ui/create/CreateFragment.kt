@@ -32,6 +32,7 @@ import com.example.animalcrossingdesign.databinding.FragmentCreateBinding
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
+import kotlin.math.abs
 import kotlin.math.pow
 
 
@@ -296,6 +297,7 @@ class CreateFragment : Fragment() {
         // assuming bitmap is 32x32 pixel bitmap
         val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
         bitmap.getPixels(arrayListOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        assert(arrayListOfImageColors.size == 32*32)
 
         val firstPixel = arrayListOfImageColors[0].toColor()
         var red_min = firstPixel.red()
@@ -326,7 +328,18 @@ class CreateFragment : Fragment() {
             }
         }
 
-        var tempstring = ""
+        val redRange = red_max - red_min
+        val greenRange = green_max - green_min
+        val blueRange = blue_max - blue_min
+
+        val sortedPixels = if (redRange > greenRange && redRange > blueRange) {
+            arrayListOfImageColors.map { it.toColor() }.sortedBy { it.red() }
+        }else if (greenRange > redRange && greenRange > blueRange) {
+            arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
+        } else {
+            arrayListOfImageColors.map { it.toColor() }.sortedBy { it.blue() }
+        }
+        /*var tempstring = ""
         if ((red_max - red_min) > (green_max - green_min)) {
             if ((red_max - red_min) > (blue_max - blue_min)) {
                 // Red is largest range
@@ -345,21 +358,33 @@ class CreateFragment : Fragment() {
             }
         }
         // TODO: fix, this is hardcoded right now
-        val sortedPixels = arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
+        //val sortedPixels = arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
+        */
 
-        val pixelMax = 32*32
-        val paletteSize = 15
-        val bucketSize: Int = pixelMax/paletteSize
+        val PIXEL_MAX = 32*32
+        val PALETTE_SIZE = 15
+        val bucketSize: Int = PIXEL_MAX/PALETTE_SIZE
         var i = 0
-        var ii = 0
+        var bucketIndex = 0
 
         val reducedARGBPalette: MutableList<Int> = mutableListOf()
-        while (i < bucketSize*paletteSize) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
-            println("i:  " + i + "/" + pixelMax)
-            println("ii: " + ii)
+        val reducedARGBPaletteMapping: MutableMap<Int, Int> = mutableMapOf()
+        while (i < bucketSize*PALETTE_SIZE) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
+            println("i:  " + i + "/" + PIXEL_MAX)
+            println("bucketIndex: " + bucketIndex)
             println()
 
-            val bucket = sortedPixels.toList().slice(i until (i + bucketSize))
+            // If last bucket, add in the remainder pixels
+            var bucket: List<Color>
+            if (i + PIXEL_MAX/PALETTE_SIZE == bucketSize*PALETTE_SIZE) {
+                bucket = sortedPixels.toList().slice(i until sortedPixels.size)
+                assert(bucket.size > bucketSize)
+                assert(abs(bucket.size - bucketSize)/bucketSize < 0.1)
+            } else {
+                bucket = sortedPixels.toList().slice(i until (i + bucketSize))
+            }
+            //val bucket = sortedPixels.toList().slice(i until (i + bucketSize))
+
             // average colors in the bucket
             val avg_red = (bucket.map { it.red() }.sum()) / bucket.size
             val avg_green = (bucket.map { it.green() }.sum()) / bucket.size
@@ -367,14 +392,33 @@ class CreateFragment : Fragment() {
 
             val bucketColorAverage = Color.argb(1f, avg_red,avg_green,avg_blue)
             reducedARGBPalette.add(bucketColorAverage)
+            //assert(sortedPixels[i].toArgb() in arrayListOfImageColors)
+            //if (sortedPixels[i].toArgb() == -16726090) {
+              //  print(1)
+            //}
+            val stopPoint = i + bucket.size
+            while (i < stopPoint) {
+                reducedARGBPaletteMapping[sortedPixels[i].toArgb()] = bucketColorAverage
+                i  += 1
+            }
 
-            i += pixelMax/paletteSize
-            ii += 1
+            //reducedARGBPaletteMapping[sortedPixels[i].toArgb()] = bucketColorAverage
+
+            //i += bucketSize
+            bucketIndex += 1
         }
 
+        //assert(reducedARGBPalette.size == reducedARGBPalette.toSet().size) {
+          //  "ReducedARGBPalette size: ${reducedARGBPalette.size} \t reducedARGBPallete.toSet() size: ${reducedARGBPalette.toSet().size}" }
+        assert(reducedARGBPalette.size == PALETTE_SIZE)
+
         val newPaletteBindings = paletteToACPalette(reducedARGBPalette)
+        //for (pixel in )
         val recoloredImagePixels:  IntArray = arrayListOfImageColors.map {
-            newPaletteBindings[it]!!
+            //newPaletteBindings[it]!!
+            //newPaletteBindings[reducedARGBPaletteMapping[it]]!!
+            reducedARGBPaletteMapping[it]!!
+
         }.toList().toIntArray()
 
         val newBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
@@ -386,11 +430,15 @@ class CreateFragment : Fragment() {
     @ExperimentalStdlibApi
     fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
         //    Returns a Hashmap<OldPaletteColor, NewACPaletteColor>
-
+        assert(palette.size == 15)
         val acColors = AnimalCrossingQRObject.animalCrossingPalettePositionToColorMap.values
 
         val colorDistances = HashMap<Int, MutableList<MutableMap.MutableEntry<Int, Double>>>()
+        var c = 0
         for (old_color in palette) {
+            println(colorDistances.size)
+            println("ooooo" + c.toString())
+            c += 1
             val acColorDistances = HashMap<Int, Double>()
             for (acColor in acColors) {
                 // TODO check if getEuclideanSRGBDistance() is correct (white is not white)
@@ -398,8 +446,11 @@ class CreateFragment : Fragment() {
                 acColorDistances[acColor] = distance
             }
             val sortedacColorDistances = acColorDistances.entries.sortedWith(compareBy { it.value })
+            //assert(old_color !in colorDistances.keys)
             colorDistances[old_color] = sortedacColorDistances.toMutableList()
         }
+        println(colorDistances.size)
+        //assert(false)
 
         // Assign new palette transformation
         //val test: HashMap<Int, Int> // <Original_color, new_color>
@@ -439,15 +490,16 @@ class CreateFragment : Fragment() {
 
                     // old binding
                     val currentlyBoundOriginalColor_toHandle = newColorBindings[acColor_to_test]!!
+                    // Try to set the new binding. should i do this earlier?
+                    newColorBindings[acColor_to_test] = currentOriginalColor
+                    versions.add(newColorBindings)
 
                     val testOldSize = colorDistances[currentlyBoundOriginalColor_toHandle]!!.size
                     colorDistances[currentlyBoundOriginalColor_toHandle]!!.removeFirst()
                     val testNewSize = colorDistances[currentlyBoundOriginalColor_toHandle]!!.size
                     assert(testNewSize == testOldSize-1)
 
-                    // Try to set the new binding. should i do this earlier?
-                    newColorBindings[acColor_to_test] = currentOriginalColor
-                    versions.add(newColorBindings)
+
 
                     //if (newColorBindings.containsKey(colorDistances[color_to_handle]!![0].key)) {
                     //}
@@ -478,6 +530,8 @@ class CreateFragment : Fragment() {
 
         }
 
+        println(colorDistances.size)
+        //assert(false)
         for (old_color in colorDistances.keys) {
             //helper variable
             //val sortedacColorDistances = colorDistances[old_color]!!
@@ -487,6 +541,7 @@ class CreateFragment : Fragment() {
                 println("REMOVE FIRST OUTER")
                 colorDistances[old_color]!!.removeFirst()
             }*/
+            val old_size = newColorBindings.size
             while (true) {
                 val isSet = setacColorToBinding(colorDistances[old_color]!![0].key, old_color, "---")
                 if (isSet) {
@@ -498,7 +553,7 @@ class CreateFragment : Fragment() {
                     colorDistances[old_color]!!.removeFirst()
                 }
             }
-
+            assert(newColorBindings.size == old_size + 1)
             //for (acColor in colorDistances[old_color]!!) { // change this into a for i in range type loop?
             //    val colorIsSet = setacColorToBinding(acColor.key, old_color)
             //    if (colorIsSet) {
@@ -513,7 +568,7 @@ class CreateFragment : Fragment() {
         }
         println(versions.size)
         println("SOSHELP!: " + newColorBindings.size.toString() + "/" + palette.size.toString())
-        assert(newColorBindings.size == palette.size)
+        //assert(newColorBindings.size == palette.size)
 
         return newColorBindings.entries.associate { (key, value) -> value to key }
     }

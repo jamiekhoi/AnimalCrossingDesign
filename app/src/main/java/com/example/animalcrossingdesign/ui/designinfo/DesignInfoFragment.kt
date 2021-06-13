@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import com.example.animalcrossingdesign.AnimalCrossingQRObject
 import com.example.animalcrossingdesign.R
 import com.example.animalcrossingdesign.databinding.FragmentDesignInfoBinding
 import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
@@ -49,13 +50,17 @@ class DesignInfoFragment : Fragment() {
         })
 
         viewModel.design.observe(viewLifecycleOwner, Observer {
-            fragmentDesignInfoBinding.detailDesignImageView.setImageBitmap(
-                Bitmap.createBitmap(it.imagePixels.toIntArray(),
-                    0,
-                    animalCrossingDesignWidth,
-                    animalCrossingDesignWidth,
-                    animalCrossingDesignHeight,
-                    Bitmap.Config.ARGB_8888))
+            val acDesignBitmap = Bitmap.createBitmap(it.imagePixels.toIntArray(),
+                0,
+                animalCrossingDesignWidth,
+                animalCrossingDesignWidth,
+                animalCrossingDesignHeight,
+                Bitmap.Config.ARGB_8888)
+            fragmentDesignInfoBinding.detailDesignImageView.setImageBitmap(acDesignBitmap)
+            val QRObject = AnimalCrossingQRObject(acDesignBitmap)
+            val QRCodeBitmap = QRObject.toQRBitmap()
+            fragmentDesignInfoBinding.detailDesignQrImageView.setImageBitmap(QRCodeBitmap)
+
             fragmentDesignInfoBinding.detailDesignAuthorTextView.text = it.author
             fragmentDesignInfoBinding.detailDesignTownTextView.text = it.town
             fragmentDesignInfoBinding.detailDesignTitleTextView.text = it.title

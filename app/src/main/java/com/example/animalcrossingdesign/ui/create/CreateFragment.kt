@@ -187,6 +187,28 @@ class CreateFragment : Fragment() {
 
         }
 
+        // Initializing a String Array
+        val spinnerArray = arrayListOf("Old method", "Median Cut")
+        // Initializing an ArrayAdapter
+        val spinnerArrayAdapter = ArrayAdapter(fragmentCreateBinding.root.context, android.R.layout.simple_spinner_item, spinnerArray)
+        // Set the drop down view resource
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Connect spinner
+        val paletteSelectionMethodSpinner = fragmentCreateBinding.paletteSelectionMethodSpinner
+        // Finally, data bind the spinner object with dapter
+        paletteSelectionMethodSpinner.adapter = spinnerArrayAdapter
+        // Set an on item selected listener for spinner object
+        paletteSelectionMethodSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent:AdapterView<*>, view: View, position: Int, id: Long){
+                // Display the selected item text on text view
+                textViewCreate.text = "Spinner selected : ${parent.getItemAtPosition(position).toString()}"
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>){
+                // Another interface callback
+            }
+        }
+
         return fragmentCreateBinding.root
     }
 

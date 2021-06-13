@@ -42,8 +42,9 @@ fun getClosestColor(color: Color, method: (Color, Color) -> Double): Pair<Color,
     return Pair(minDistanceColor, distanceList)
 }
 
-fun convertBitmapToFitACPalette(bitmap: Bitmap, method: String = "rgb"): Bitmap {
-
+// TODO: rename
+fun convertBitmapToFitACPalette(bitmap: Bitmap): Bitmap {
+    val method = "rgb"
     val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
     bitmap.getPixels(arrayListOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 

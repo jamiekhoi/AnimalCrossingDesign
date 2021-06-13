@@ -68,11 +68,14 @@ class CreateFragment : Fragment() {
     private val db = Firebase.firestore
 
     @ExperimentalStdlibApi
+    private var paletteSelectionMethod: (Bitmap) -> Bitmap = ::convertBitmapMedianCut
+
+    @ExperimentalStdlibApi
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         createViewModel =
                 ViewModelProvider(this).get(CreateViewModel::class.java)
@@ -128,7 +131,8 @@ class CreateFragment : Fragment() {
         changeColorButton.setOnClickListener {
             // Change colors to animal crossing colors
             //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
-            val convertedbmp = convertBitmapMedianCut(imageView.drawable.toBitmap())
+            //val convertedbmp = convertBitmapMedianCut(imageView.drawable.toBitmap())
+            val convertedbmp = paletteSelectionMethod(imageView.drawable.toBitmap())
             imageView.setImageBitmap(convertedbmp)
         }
 
@@ -189,6 +193,7 @@ class CreateFragment : Fragment() {
 
         // Initializing a String Array
         val spinnerArray = arrayListOf("Old method", "Median Cut")
+        val spinnerArrayMethods = arrayListOf(::convertBitmapToFitACPalette, ::convertBitmapMedianCut)
         // Initializing an ArrayAdapter
         val spinnerArrayAdapter = ArrayAdapter(fragmentCreateBinding.root.context, android.R.layout.simple_spinner_item, spinnerArray)
         // Set the drop down view resource
@@ -202,6 +207,7 @@ class CreateFragment : Fragment() {
             override fun onItemSelected(parent:AdapterView<*>, view: View, position: Int, id: Long){
                 // Display the selected item text on text view
                 textViewCreate.text = "Spinner selected : ${parent.getItemAtPosition(position).toString()}"
+                paletteSelectionMethod = spinnerArrayMethods[position]
             }
 
             override fun onNothingSelected(parent: AdapterView<*>){
@@ -376,6 +382,7 @@ class CreateFragment : Fragment() {
 
     }
 
+    @ExperimentalStdlibApi
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
@@ -447,6 +454,7 @@ class CreateFragment : Fragment() {
         return croppedBitmap
     }
 
+    @ExperimentalStdlibApi
     private fun scaleBitmap_convertBitmap_createQR_saveFireStore(croppedBitmap: Bitmap) {
         val scaledBitmap = Bitmap.createScaledBitmap(
             croppedBitmap,
@@ -455,7 +463,8 @@ class CreateFragment : Fragment() {
             true
         )
 
-        val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
+        //val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
+        val convertedbmp = paletteSelectionMethod(scaledBitmap)
 
         val QRObject = AnimalCrossingQRObject(convertedbmp)
         val QRCodeBitmap = QRObject.toQRBitmap()

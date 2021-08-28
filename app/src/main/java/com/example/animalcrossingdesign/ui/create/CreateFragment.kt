@@ -128,6 +128,7 @@ class CreateFragment : Fragment() {
             // Change colors to animal crossing colors
             //val convertedbmp = convertBitmapToFitACPalette(imageView.drawable.toBitmap(), "rgb")
             //val convertedbmp = convertBitmapMedianCut(imageView.drawable.toBitmap())
+            adapter_arraylist.clear()
             scaleBitmap_convertBitmap_createQR_saveFireStore(imageView.drawable.toBitmap())
         }
 
@@ -288,7 +289,7 @@ class CreateFragment : Fragment() {
         val gridlayoutmanger = GridLayoutManager(fragmentCreateBinding.root.context, 2)
         recycleview.layoutManager = gridlayoutmanger
         // Empty images already loaded
-        adapter_arraylist.clear()
+        //adapter_arraylist.clear()
 
         adapter_arraylist.add(design_bitmap)
         adapter_arraylist.add(qr_bitmap)
@@ -338,6 +339,7 @@ class CreateFragment : Fragment() {
         }
     }
 
+    @ExperimentalStdlibApi
     private fun splitImage() {
 
         // Empty images already loaded
@@ -355,14 +357,16 @@ class CreateFragment : Fragment() {
 
         for(y in 0 until split_amount){
             for(x in 0 until split_amount){
-                split_images.add(Bitmap.createBitmap(bitmap, x * x_chuck_size, y * y_chuck_size, x_chuck_size, y_chuck_size))
+                //split_images.add(Bitmap.createBitmap(bitmap, x * x_chuck_size, y * y_chuck_size, x_chuck_size, y_chuck_size))
+                scaleBitmap_convertBitmap_createQR_saveFireStore(Bitmap.createBitmap(bitmap, x * x_chuck_size, y * y_chuck_size, x_chuck_size, y_chuck_size))
             }
         }
 
         //imageView.setImageBitmap(split_images.get(0))
 
-        adapter_arraylist.addAll(split_images)
-        customadapter.notifyDataSetChanged()
+
+        //adapter_arraylist.addAll(split_images)
+        //customadapter.notifyDataSetChanged()
 
     }
 
@@ -395,6 +399,7 @@ class CreateFragment : Fragment() {
                 val bundle: Bundle? = data?.extras
                 val bitmap: Bitmap? = data?.getParcelableExtra<Bitmap>("data")
 
+                adapter_arraylist.clear()
                 scaleBitmap_convertBitmap_createQR_saveFireStore(bitmap!!)
 
             }
@@ -425,6 +430,7 @@ class CreateFragment : Fragment() {
                 val bitmap = imageView.drawable.toBitmap()
                 val croppedBitmap = imageViewBitmapAutoCrop(bitmap)
 
+                adapter_arraylist.clear()
                 scaleBitmap_convertBitmap_createQR_saveFireStore(croppedBitmap)
 
             }

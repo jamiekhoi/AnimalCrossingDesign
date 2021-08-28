@@ -202,7 +202,7 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
         var bucket: List<Color>
         if (i + PIXEL_MAX/PALETTE_SIZE == bucketSize*PALETTE_SIZE) {
             bucket = sortedPixels.toList().slice(i until sortedPixels.size)
-            assert(bucket.size > bucketSize)
+            assert(bucket.size == bucketSize + 4)
             assert(abs(bucket.size - bucketSize) /bucketSize < 0.1)
         } else {
             bucket = sortedPixels.toList().slice(i until (i + bucketSize))
@@ -241,7 +241,7 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
     val recoloredImagePixels:  IntArray = arrayListOfImageColors.map {
         //newPaletteBindings[it]!!
         //newPaletteBindings[reducedARGBPaletteMapping[it]]!!
-        reducedARGBPaletteMapping[it]!!
+        newPaletteBindings[reducedARGBPaletteMapping[it]!!]!!
 
     }.toList().toIntArray()
 

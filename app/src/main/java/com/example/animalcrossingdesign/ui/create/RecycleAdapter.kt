@@ -10,8 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.R
 
-
-class CustomAdapter(private val dataSet: ArrayList<HashMap<String,Any>>) :
+class CustomAdapter(private val dataSet: ArrayList<Bitmap>) :
         RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
 
     /**
@@ -45,12 +44,9 @@ class CustomAdapter(private val dataSet: ArrayList<HashMap<String,Any>>) :
         // contents of the view with that element
         //viewHolder.textView.text = dataSet[position]["name"].toString()
 
-        val data = dataSet[position]["image"]
-        if (data is Int){
-            viewHolder.imageView.setImageResource(dataSet[position]["image"] as Int)
-        }else if (data is Bitmap){
-            viewHolder.imageView.setImageBitmap(dataSet[position]["image"] as Bitmap)
-        }
+        val data = dataSet[position]
+        viewHolder.imageView.setImageBitmap(dataSet[position] as Bitmap)
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)

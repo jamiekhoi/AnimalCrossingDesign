@@ -21,6 +21,11 @@ data class DesignDataClassSimple(var author: String = "",
                                  var imagePositionByteData: List<Int> = emptyList())
 
 
+fun pixelListToBitmap(imagePixels: List<Int>): Bitmap {
+    assert(imagePixels.size == 32*32)
+    return Bitmap.createBitmap(imagePixels.toIntArray(), 0, 32, 32, 32, Bitmap.Config.ARGB_8888)
+}
+
 class AnimalCrossingQRObject {
     val PALETTE_MAX = 15
 
@@ -281,6 +286,16 @@ class AnimalCrossingQRObject {
          */
         imagePixelsBETA = pixels.toList()
     }*/
+
+    fun toDesignDataClassSimple(): DesignDataClassSimple {
+        return DesignDataClassSimple(author,
+        title,
+        town,
+        colorPalettePositions,
+        imagePixels,
+        imagePositionByteData)
+
+    }
 
     fun toQRBitmap(): Bitmap {
         return byteArrayToQRCode(toQRRawBytes())

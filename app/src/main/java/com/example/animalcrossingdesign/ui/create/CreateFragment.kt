@@ -16,8 +16,10 @@ import android.widget.*
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalcrossingdesign.*
@@ -26,6 +28,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.example.animalcrossingdesign.databinding.FragmentCreateBinding
+import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
@@ -38,7 +41,7 @@ class CreateFragment : Fragment() {
 
     lateinit var imageView: ImageView
     private lateinit var crop_switch: Switch
-    private lateinit var adapter_arraylist: ArrayList<Bitmap>
+    private lateinit var adapter_arraylist: ArrayList<Pair<Bitmap, AnimalCrossingQRObject>>
     private lateinit var textViewRowCol: TextView
     private lateinit var recycleview: RecyclerView
     //Todo: Is it bad to put root here instead of inside constructor?
@@ -72,9 +75,9 @@ class CreateFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
+        val galleryViewModel: GalleryViewModel by activityViewModels()
 
-        createViewModel =
-                ViewModelProvider(this).get(CreateViewModel::class.java)
+        createViewModel = ViewModelProvider(this).get(CreateViewModel::class.java)
 
         fragmentCreateBinding = FragmentCreateBinding.inflate(inflater, container, false)
         //root = inflater.inflate(R.layout.fragment_create, container, false)
@@ -139,7 +142,7 @@ class CreateFragment : Fragment() {
         // Create adapter for
         // val split_images: MutableList<Bitmap> = arrayListOf()
         // mutableListOf("one", "two", "three", "four")
-        adapter_arraylist = ArrayList<Bitmap>()
+        adapter_arraylist = ArrayList<Pair<Bitmap, AnimalCrossingQRObject>>()
 
 
         recycleview = fragmentCreateBinding.recyclerView
@@ -149,8 +152,12 @@ class CreateFragment : Fragment() {
         val gridlayoutmanger = GridLayoutManager(fragmentCreateBinding.root.context, textViewRowCol.text.toString().toInt())
         recycleview.layoutManager = gridlayoutmanger//GridLayoutManager(root.context, textViewRowCol.text.toString().toInt())
 
+        val clicklistener =  { v: View, item: DesignDataClassSimple ->
+            galleryViewModel.design.postValue(item)
+            v.findNavController().navigate(R.id.action_nav_create_to_nav_design_detail)
+        }
         // Access the RecyclerView Adapter and load the data into it
-        customadapter = CustomAdapter(adapter_arraylist)
+        customadapter = CustomAdapter(adapter_arraylist, clicklistener)
         recycleview.adapter = customadapter
 
 
@@ -285,14 +292,14 @@ class CreateFragment : Fragment() {
         //splitImage()
     }
 
-    private fun add_design_and_qr_to_gridview(design_bitmap: Bitmap, qr_bitmap: Bitmap){
+    private fun add_design_and_qr_to_gridview(design_bitmap: Bitmap, qr_bitmap: Bitmap, QRObject: AnimalCrossingQRObject){
         val gridlayoutmanger = GridLayoutManager(fragmentCreateBinding.root.context, 2)
         recycleview.layoutManager = gridlayoutmanger
         // Empty images already loaded
         //adapter_arraylist.clear()
 
-        adapter_arraylist.add(design_bitmap)
-        adapter_arraylist.add(qr_bitmap)
+        adapter_arraylist.add(Pair(design_bitmap, QRObject))
+        adapter_arraylist.add(Pair(qr_bitmap, QRObject))
 
         customadapter.notifyDataSetChanged()
     }
@@ -353,21 +360,12 @@ class CreateFragment : Fragment() {
         val x_chuck_size: Int = bitmap.width/split_amount
         val y_chuck_size: Int = bitmap.height/split_amount
 
-        val split_images: MutableList<Bitmap> = arrayListOf()
-
         for(y in 0 until split_amount){
             for(x in 0 until split_amount){
                 //split_images.add(Bitmap.createBitmap(bitmap, x * x_chuck_size, y * y_chuck_size, x_chuck_size, y_chuck_size))
                 scaleBitmap_convertBitmap_createQR_saveFireStore(Bitmap.createBitmap(bitmap, x * x_chuck_size, y * y_chuck_size, x_chuck_size, y_chuck_size))
             }
         }
-
-        //imageView.setImageBitmap(split_images.get(0))
-
-
-        //adapter_arraylist.addAll(split_images)
-        //customadapter.notifyDataSetChanged()
-
     }
 
     @ExperimentalStdlibApi
@@ -459,7 +457,7 @@ class CreateFragment : Fragment() {
         val QRObject = AnimalCrossingQRObject(convertedbmp)
         val QRCodeBitmap = QRObject.toQRBitmap()
 
-        add_design_and_qr_to_gridview(convertedbmp, QRCodeBitmap)
+        add_design_and_qr_to_gridview(convertedbmp, QRCodeBitmap, QRObject)
 
         saveToFirebaseFireStore(QRObject)
     }

@@ -238,9 +238,9 @@ class AnimalCrossingQRObject {
     }
 
     constructor(convertedBitmap: Bitmap,
-                title: String = "title",
-                author: String = "author",
-                town: String = "JollyIsle",
+                title: String,
+                author: String,
+                town: String,
                 converted: Boolean = true // Todo
     ) {
 
@@ -325,13 +325,13 @@ class AnimalCrossingQRObject {
         val townMax = 10
 
         if (title.length > titleMax){
-            throw ACObjectCreationException("Title length over $titleMax characters")
+            throw ACObjectCreationException("Title length over $titleMax characters: $title")
         }
         if (author.length > authorMax){
-            throw ACObjectCreationException("Author length over $authorMax characters")
+            throw ACObjectCreationException("Author length over $authorMax characters: $author")
         }
         if (town.length > townMax){
-            throw ACObjectCreationException("Town length over $townMax characters")
+            throw ACObjectCreationException("Town length over $townMax characters: $town")
         }
     }
 

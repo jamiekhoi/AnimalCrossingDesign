@@ -32,6 +32,7 @@ import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
+import kotlinx.coroutines.internal.artificialFrame
 
 
 class CreateFragment : Fragment() {
@@ -454,7 +455,11 @@ class CreateFragment : Fragment() {
         //val convertedbmp = convertBitmapToFitACPalette(scaledBitmap, "rgb")
         val convertedbmp = paletteSelectionMethod(scaledBitmap)
 
-        val QRObject = AnimalCrossingQRObject(convertedbmp)
+        val title = fragmentCreateBinding.createTitleEditView.text.toString()
+        val author = fragmentCreateBinding.createAuthorEditView.text.toString()
+        val town = fragmentCreateBinding.createTownEditView.text.toString()
+
+        val QRObject = AnimalCrossingQRObject(convertedbmp, title, author, town)
         val QRCodeBitmap = QRObject.toQRBitmap()
 
         add_design_and_qr_to_gridview(convertedbmp, QRCodeBitmap, QRObject)

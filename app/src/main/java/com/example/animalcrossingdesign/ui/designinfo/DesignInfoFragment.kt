@@ -57,7 +57,7 @@ class DesignInfoFragment : Fragment() {
                 animalCrossingDesignHeight,
                 Bitmap.Config.ARGB_8888)
             fragmentDesignInfoBinding.detailDesignImageView.setImageBitmap(acDesignBitmap)
-            val QRObject = AnimalCrossingQRObject(acDesignBitmap)
+            val QRObject = AnimalCrossingQRObject(acDesignBitmap, it.title, it.author, it.town)
             val QRCodeBitmap = QRObject.toQRBitmap()
             fragmentDesignInfoBinding.detailDesignQrImageView.setImageBitmap(QRCodeBitmap)
 

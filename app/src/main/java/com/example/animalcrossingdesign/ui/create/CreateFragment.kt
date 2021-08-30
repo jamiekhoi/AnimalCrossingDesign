@@ -205,7 +205,7 @@ class CreateFragment : Fragment() {
         paletteSelectionMethodSpinner.adapter = spinnerArrayAdapter
         // Set an on item selected listener for spinner object
         paletteSelectionMethodSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(parent:AdapterView<*>, view: View, position: Int, id: Long){
+            override fun onItemSelected(parent:AdapterView<*>, view: View?, position: Int, id: Long){
                 // Display the selected item text on text view
                 textViewCreate.text = "Spinner selected : ${parent.getItemAtPosition(position).toString()}"
                 paletteSelectionMethod = spinnerArrayMethods[position]

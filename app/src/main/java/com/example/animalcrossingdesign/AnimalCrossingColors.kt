@@ -1,11 +1,9 @@
 package com.example.animalcrossingdesign
 
 import android.graphics.Bitmap
-import com.example.animalcrossingdesign.ui.gallery.GalleryFragment
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import net.glxn.qrgen.android.QRCode
-import java.text.FieldPosition
 
 
 class ACObjectCreationException : RuntimeException {
@@ -33,7 +31,7 @@ class AnimalCrossingQRObject {
     var author: String
     var town: String
     var colorPalettePositions: List<Int>
-    var imagePixels: List<Int>
+    var designPixels: List<Int>
     var imagePositionByteData: List<Int>
 
     companion object {
@@ -234,7 +232,7 @@ class AnimalCrossingQRObject {
         this.imagePositionByteData = imageData.toList().map { it.toInt() }
         //this.imagePixels = getPixelColorsFromBytes(imageData).map { animalCrossingPalettePositionToColorMap[this.colorPalettePositions[it]]!! }.toIntArray()
         //setImagePixels(getPixelColorsFromBytes(imageData).toIntArray())
-        imagePixels = getPixelColorsFromBytes(imageData)
+        designPixels = getPixelColorsFromBytes(imageData)
     }
 
     constructor(convertedBitmap: Bitmap,
@@ -252,9 +250,9 @@ class AnimalCrossingQRObject {
         val tempIntArray = IntArray(convertedBitmap.width * convertedBitmap.height)
         convertedBitmap.getPixels(tempIntArray, 0, convertedBitmap.width, 0, 0, convertedBitmap.width, convertedBitmap.height);
         //setImagePixels(tempIntArray)
-        imagePixels = tempIntArray.toList()
+        designPixels = tempIntArray.toList()
 
-        var tmpPalette = imagePixels.toIntArray().distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
+        var tmpPalette = designPixels.toIntArray().distinct().map { animalCrossingPaletteColorToPositionMap[it]!! }.toByteArray()
         for (el in animalCrossingPaletteColorToPositionMap.values) {
             if (tmpPalette.size >= PALETTE_MAX) {
                 break
@@ -268,7 +266,7 @@ class AnimalCrossingQRObject {
         }
         this.colorPalettePositions = tmpPalette.toList().map { it.toInt() }
 
-        this.imagePositionByteData = pixelsToPositionByteData(imagePixels.toIntArray(), this.colorPalettePositions.map { it.toByte() }.toByteArray()).toList().map { it.toInt() }
+        this.imagePositionByteData = pixelsToPositionByteData(designPixels.toIntArray(), this.colorPalettePositions.map { it.toByte() }.toByteArray()).toList().map { it.toInt() }
     }
 
     /*fun getImagePixels1(): IntArray {
@@ -292,9 +290,14 @@ class AnimalCrossingQRObject {
         title,
         town,
         colorPalettePositions,
-        imagePixels,
+        designPixels,
         imagePositionByteData)
 
+    }
+
+    fun toDesignBitmap(): Bitmap {
+        assert(designPixels.size == 32*32)
+        return Bitmap.createBitmap(designPixels.toIntArray(), 0, 32, 32, 32, Bitmap.Config.ARGB_8888)
     }
 
     fun toQRBitmap(): Bitmap {
@@ -305,7 +308,7 @@ class AnimalCrossingQRObject {
         /*
         Todo: use this in the constructors and make this a class member
          */
-        return allDataToQRByteArray(imagePixels.toIntArray(), colorPalettePositions.map { it.toByte() }.toByteArray(), title, author, town)
+        return allDataToQRByteArray(designPixels.toIntArray(), colorPalettePositions.map { it.toByte() }.toByteArray(), title, author, town)
     }
 
     private fun byteArrayToQRCode(qrByteArray: ByteArray): Bitmap {
@@ -320,18 +323,23 @@ class AnimalCrossingQRObject {
     }
 
     private fun constructorLenChecks(title: String, author: String, town: String) {
-        val titleMax = 20
-        val authorMax = 10
-        val townMax = 10
+        // Make design compatible with New Leaf and New Horizons
+        val titleMaxNL = 21
+        val authorMaxNL = 9
+        val townMaxNL = 9
 
-        if (title.length > titleMax){
-            throw ACObjectCreationException("Title length over $titleMax characters: $title")
+        val titleMaxNH = 20
+        val authorMaxNH = 10
+        val townMaxNH = 10
+
+        if (title.length > titleMaxNH){
+            throw ACObjectCreationException("Title length over $titleMaxNH characters: $title")
         }
-        if (author.length > authorMax){
-            throw ACObjectCreationException("Author length over $authorMax characters: $author")
+        if (author.length > authorMaxNL){
+            throw ACObjectCreationException("Author length over $authorMaxNL characters: $author")
         }
-        if (town.length > townMax){
-            throw ACObjectCreationException("Town length over $townMax characters: $town")
+        if (town.length > townMaxNL){
+            throw ACObjectCreationException("Town length over $townMaxNL characters: $town")
         }
     }
 
@@ -349,11 +357,15 @@ class AnimalCrossingQRObject {
 
     private fun allDataToQRByteArray(intArrayOfImageColors: IntArray,
                                      colorPalettePositions: ByteArray,
-                                     title: String = "title",
-                                     author: String = "author",
-                                     town: String = "JollyIsle"): ByteArray {
+                                     title: String,
+                                     author: String,
+                                     town: String): ByteArray {
         fun stringFormatHelper(s: String): ByteArray {
-            return s.toByteArray()
+            var byteArray: ByteArray = byteArrayOf()
+            for (letter in s) {
+                byteArray = byteArray + letter.toByte() + 0x00.toByte()
+            }
+            return byteArray//s.toByteArray()
             //return s.toByteArray().zip(ByteArray(s.length)){ a,b -> listOf(a,b)}.flatten().toByteArray()
         }
 
@@ -413,6 +425,7 @@ class AnimalCrossingQRObject {
 
         // Pixel color to position byte data
         qrByteArray += pixelsToPositionByteData(intArrayOfImageColors, colorPalettePositions)
+        assert(qrByteArray.size == 620)
         return qrByteArray
     }
 

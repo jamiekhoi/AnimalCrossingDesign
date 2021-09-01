@@ -53,9 +53,11 @@ class HomeFragment : Fragment() {
 
         //val root = inflater.inflate(R.layout.fragment_home, container, false)
         val textView: TextView = fragmentHomeBinding.textHome//root.findViewById(R.id.text_home)
-        viewModel.text.observe(viewLifecycleOwner, Observer {
+        /*viewModel.text.observe(viewLifecycleOwner, Observer {
             //textView.text = it
         })
+
+         */
 
         val homeFeedFireStoreDesignRecyclerView: RecyclerView = fragmentHomeBinding.homeFeedFireStoreDesignRecyclerView
         val gridfirestorelayoutmanger = GridLayoutManager(fragmentHomeBinding.root.context, 3)

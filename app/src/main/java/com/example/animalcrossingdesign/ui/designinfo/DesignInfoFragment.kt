@@ -1,20 +1,15 @@
 package com.example.animalcrossingdesign.ui.designinfo
 
 import android.graphics.Bitmap
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.example.animalcrossingdesign.AnimalCrossingQRObject
-import com.example.animalcrossingdesign.R
 import com.example.animalcrossingdesign.databinding.FragmentDesignInfoBinding
-import com.example.animalcrossingdesign.databinding.FragmentGalleryBinding
-import com.example.animalcrossingdesign.ui.gallery.FireStoreDesignAdapter
 import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
 
 class DesignInfoFragment : Fragment() {
@@ -50,7 +45,7 @@ class DesignInfoFragment : Fragment() {
         })
 
         viewModel.design.observe(viewLifecycleOwner, Observer {
-            val acDesignBitmap = Bitmap.createBitmap(it.imagePixels.toIntArray(),
+            val acDesignBitmap = Bitmap.createBitmap(it.designPixels.toIntArray(),
                 0,
                 animalCrossingDesignWidth,
                 animalCrossingDesignWidth,

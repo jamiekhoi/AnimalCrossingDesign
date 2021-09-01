@@ -15,7 +15,7 @@ data class DesignDataClassSimple(var author: String = "",
                                  var title: String = "",
                                  var town: String = "",
                                  var colorPalettePositions: List<Int> = emptyList(),
-                                 var imagePixels: List<Int> = emptyList(),
+                                 var designPixels: List<Int> = emptyList(),
                                  var imagePositionByteData: List<Int> = emptyList())
 
 
@@ -225,9 +225,10 @@ class AnimalCrossingQRObject {
         val colorPalettePositions: ByteArray = rawQRBytes.sliceArray(88..102)
         val imageData: ByteArray = rawQRBytes.sliceArray(108 until rawQRBytes.size)
 
-        this.title = title.joinToString(separator = "", transform = { it.toChar().toString() })
-        this.author = author.joinToString(separator = "", transform = { it.toChar().toString() })
-        this.town = town.joinToString(separator = "", transform = { it.toChar().toString() })
+        ACByteStringToString(title)
+        this.title = ACByteStringToString(title)
+        this.author = ACByteStringToString(author)
+        this.town = ACByteStringToString(town)
         this.colorPalettePositions = colorPalettePositions.toList().map { it.toInt() }
         this.imagePositionByteData = imageData.toList().map { it.toInt() }
         //this.imagePixels = getPixelColorsFromBytes(imageData).map { animalCrossingPalettePositionToColorMap[this.colorPalettePositions[it]]!! }.toIntArray()
@@ -343,6 +344,19 @@ class AnimalCrossingQRObject {
         }
     }
 
+    private fun stringFormatHelper(s: String): ByteArray {
+        var byteArray: ByteArray = byteArrayOf()
+        for (letter in s) {
+            byteArray = byteArray + letter.toByte() + 0x00.toByte()
+        }
+        return byteArray//s.toByteArray()
+        //return s.toByteArray().zip(ByteArray(s.length)){ a,b -> listOf(a,b)}.flatten().toByteArray()
+    }
+
+    private fun ACByteStringToString(byte_string: ByteArray): String {
+        return byte_string.filter { it != 0.toByte() }.toByteArray().toString(Charsets.ISO_8859_1)
+    }
+
     private fun getPixelColorsFromBytes(bytes: ByteArray): ArrayList<Int> {
         val arrayListOfPixels = ArrayList<Int>()
 
@@ -360,14 +374,6 @@ class AnimalCrossingQRObject {
                                      title: String,
                                      author: String,
                                      town: String): ByteArray {
-        fun stringFormatHelper(s: String): ByteArray {
-            var byteArray: ByteArray = byteArrayOf()
-            for (letter in s) {
-                byteArray = byteArray + letter.toByte() + 0x00.toByte()
-            }
-            return byteArray//s.toByteArray()
-            //return s.toByteArray().zip(ByteArray(s.length)){ a,b -> listOf(a,b)}.flatten().toByteArray()
-        }
 
         // Unique ID
         val _1: Byte = 0xB6.toByte()//0

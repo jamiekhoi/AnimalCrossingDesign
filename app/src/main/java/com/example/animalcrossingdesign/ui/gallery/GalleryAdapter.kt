@@ -73,7 +73,7 @@ class FireStoreDesignAdapter(private val data: ArrayList<DesignDataClassSimple>,
             listener(it, item)
         }
 
-        viewHolder.galleryItemBinding.galleryDesignGridViewImageview.setImageBitmap(Bitmap.createBitmap(item.imagePixels.toIntArray(),
+        viewHolder.galleryItemBinding.galleryDesignGridViewImageview.setImageBitmap(Bitmap.createBitmap(item.designPixels.toIntArray(),
                 0,
                 animalCrossingDesignWidth,
                 animalCrossingDesignWidth,

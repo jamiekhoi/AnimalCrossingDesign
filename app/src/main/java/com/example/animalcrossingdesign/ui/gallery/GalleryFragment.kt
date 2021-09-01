@@ -52,7 +52,7 @@ class GalleryFragment : Fragment() {
         // This is used so that the binding can observe LiveData updates
         fragmentGalleryBinding.lifecycleOwner = viewLifecycleOwner
 
-        // Observer for the Game finished event
+        /*// Observer for the Game finished event
         galleryViewModel.text.observe(viewLifecycleOwner, Observer {
             val t = it
         })
@@ -60,8 +60,9 @@ class GalleryFragment : Fragment() {
         galleryViewModel.pleasechange.observe(viewLifecycleOwner, Observer {
             val t = it
         })
+         */
 
-        galleryViewModel.pleasechange.postValue("chagned")
+        //galleryViewModel.pleasechange.postValue("chagned")
 
         //val textView: TextView = fragmentGalleryBinding.text_gallery
         //galleryViewModel.text.observe(viewLifecycleOwner, Observer {

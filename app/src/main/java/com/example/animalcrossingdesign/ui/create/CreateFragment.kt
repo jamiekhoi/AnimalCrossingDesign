@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,7 +33,9 @@ import com.example.animalcrossingdesign.ui.gallery.GalleryViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
-import kotlinx.coroutines.internal.artificialFrame
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 
 class CreateFragment : Fragment() {
@@ -237,20 +240,43 @@ class CreateFragment : Fragment() {
                 var1 = barcodes[0].rawBytes!!
 
                 for (barcode in barcodes) {
-                    barcode
-                    //val newBitmap = Bitmap.createBitmap(animalCrossingDesignWidth, animalCrossingDesignHeight, Bitmap.Config.ARGB_8888)
-                    //newBitmap.setPixels(QRObject.imagePixels, 0, animalCrossingDesignWidth, 0,0, animalCrossingDesignWidth, animalCrossingDesignHeight)
-                    val box = barcode.getBoundingBox()
+                    /*val box = barcode.getBoundingBox()
                     val newbitmap = Bitmap.createBitmap(imageView.drawable.toBitmap(),
                         box.left-0, box.top-0, box.width(), box.height())
                     imageView.setImageBitmap(newbitmap)
-
-                    barcode
+                     */
+                    val rawBytes = barcode.rawBytes!!
+                    val QRObject = AnimalCrossingQRObject(rawBytes)
+                    imageView.setImageBitmap(QRObject.toDesignBitmap())
+                    fragmentCreateBinding.createTitleEditView.setText(QRObject.title)
+                    fragmentCreateBinding.createAuthorEditView.setText(QRObject.author)
+                    fragmentCreateBinding.createTownEditView.setText(QRObject.town)
                 }
-                // END TESTING
             }
     }
+    fun bitmapToFile(bitmap: Bitmap, fileNameToSave: String): File? { // File name like "image.png"
+        //create a file to write bitmap data
+        var file: File? = null
+        return try {
+            file = File(Environment.getExternalStorageDirectory().toString() + File.separator + fileNameToSave)
+            file.createNewFile()
 
+            //Convert bitmap to byte array
+            val bos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos) // YOU can also save it in JPEG
+            val bitmapdata = bos.toByteArray()
+
+            //write the bytes in file
+            val fos = FileOutputStream(file)
+            fos.write(bitmapdata)
+            fos.flush()
+            fos.close()
+            file
+        } catch (e: Exception) {
+            e.printStackTrace()
+            file // it will return null
+        }
+    }
     private fun saveToFirebaseFireStore(qrObject: AnimalCrossingQRObject) {
         // Add a new document with a generated ID
         // TODO: Fix authentication so only logged in users can read/write
@@ -413,17 +439,14 @@ class CreateFragment : Fragment() {
                         Log.e(TAG, key + " : " + if (bundle[key] != null) bundle[key] else "NULL")
                     }
                 }
-
-
-
-
             }
         }
         else{
             println(resultCode)
             if(requestCode == CROP_IMAGE) {
                 val bitmap = imageView.drawable.toBitmap()
-                imageViewBitmapAutoCrop(bitmap)
+                //imageViewBitmapAutoCrop(bitmap)
+                QRCodeCloseup()
             }
             else if(requestCode == THE_WHOLE_ENCHILADA_CROP_IMAGE){
                 val bitmap = imageView.drawable.toBitmap()
@@ -463,6 +486,8 @@ class CreateFragment : Fragment() {
         val QRCodeBitmap = QRObject.toQRBitmap()
 
         add_design_and_qr_to_gridview(convertedbmp, QRCodeBitmap, QRObject)
+
+        bitmapToFile(QRCodeBitmap, "test.jpg")//System.currentTimeMillis().toString()+".jpeg")
 
         saveToFirebaseFireStore(QRObject)
     }

@@ -118,6 +118,7 @@ fun convertBitmapToFitACPalette(bitmap: Bitmap): Bitmap {
 
 @ExperimentalStdlibApi
 fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
+    // TODO: Make buckets and create new color palette from whole(or larger than 32*32) before reducing to 32*32. Should make images nicer
     // assuming bitmap is 32x32 pixel bitmap
     val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
     bitmap.getPixels(arrayListOfImageColors, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)

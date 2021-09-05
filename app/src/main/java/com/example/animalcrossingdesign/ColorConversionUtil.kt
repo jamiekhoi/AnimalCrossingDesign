@@ -191,10 +191,9 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
     val PIXEL_MAX = 32*32
     val PALETTE_SIZE = 15
     val bucketSize: Int = PIXEL_MAX/PALETTE_SIZE
-    var i = 0
 
     val reducedARGBBucketPalette: MutableList<Int> = mutableListOf()
-    while (i < bucketSize*PALETTE_SIZE) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
+    for (i in 0 until bucketSize*PALETTE_SIZE step bucketSize) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
 
         // If last bucket, add in the remainder pixels
         var bucket: List<Color>
@@ -213,8 +212,6 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
 
         val bucketColorAverage = Color.argb(1f, avg_red,avg_green,avg_blue)
         reducedARGBBucketPalette.add(bucketColorAverage)
-
-        i += bucket.size
     }
 
     assert(reducedARGBBucketPalette.size == PALETTE_SIZE)

@@ -115,9 +115,20 @@ fun convertBitmapToFitACPalette(bitmap: Bitmap): Bitmap {
     return newBitmap
 }
 
+fun CreateQuickBitmap(colors: IntArray): Bitmap {
+    // For color visualization when debugging
+    return Bitmap.createBitmap(colors, colors.size, 1, Bitmap.Config.ARGB_8888)
+}
+
+fun ListColorToIntArray(list: List<Color>): IntArray {
+    // For color visualization when debugging
+    return list.map { it.toArgb() }.toIntArray()
+}
 
 @ExperimentalStdlibApi
 fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
+    // TODO: Handle "transparent" color. Current converts to black?
+    // TODO: When total distinct colors is 15 or less no need for buckets
     // TODO: Make buckets and create new color palette from whole(or larger than 32*32) before reducing to 32*32. Should make images nicer
     // assuming bitmap is 32x32 pixel bitmap
     val arrayListOfImageColors = IntArray(bitmap.width*bitmap.height)
@@ -132,7 +143,6 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
     var blue_min = firstPixel.blue()
     var blue_max = firstPixel.blue()
     for (pixel in arrayListOfImageColors) {
-        //pixel.toColor().convert(ColorSpace.get(ColorSpace.Named.CIE_LAB))
         val color = pixel.toColor()
         if (color.red() < red_min) {
             red_min = color.red()
@@ -158,46 +168,33 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
     val blueRange = blue_max - blue_min
 
     val sortedPixels = if (redRange > greenRange && redRange > blueRange) {
-        arrayListOfImageColors.map { it.toColor() }.sortedBy { it.red() }
+        if (greenRange > blueRange) {
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.red() }.thenBy { it.green() }.thenBy { it.blue() })
+        } else {
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.red() }.thenBy { it.blue() }.thenBy { it.green() })
+        }
+        //arrayListOfImageColors.map { it.toColor() }.sortedBy { it.red() }
     }else if (greenRange > redRange && greenRange > blueRange) {
-        arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
-    } else {
-        arrayListOfImageColors.map { it.toColor() }.sortedBy { it.blue() }
-    }
-    /*var tempstring = ""
-    if ((red_max - red_min) > (green_max - green_min)) {
-        if ((red_max - red_min) > (blue_max - blue_min)) {
-            // Red is largest range
-            tempstring = "red"
+        if (redRange > blueRange) {
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.green() }.thenBy { it.red() }.thenBy { it.blue() })
         } else {
-            // blue is largest range
-            tempstring = "blue"
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.green() }.thenBy { it.blue() }.thenBy { it.red() })
         }
     } else {
-        if ((green_max - green_min) > (blue_max - blue_min)) {
-            // green is largest range
-            tempstring = "green"
+        if (redRange > greenRange) {
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.blue() }.thenBy { it.red() }.thenBy { it.green() })
         } else {
-            // blue is largest range
-            tempstring = "blue"
+            arrayListOfImageColors.map { it.toColor() }.sortedWith(compareBy<Color> { it.blue() }.thenBy { it.green() }.thenBy { it.red() })
         }
     }
-    // TODO: fix, this is hardcoded right now
-    //val sortedPixels = arrayListOfImageColors.map { it.toColor() }.sortedBy { it.green() }
-    */
 
     val PIXEL_MAX = 32*32
     val PALETTE_SIZE = 15
     val bucketSize: Int = PIXEL_MAX/PALETTE_SIZE
     var i = 0
-    var bucketIndex = 0
 
-    val reducedARGBPalette: MutableList<Int> = mutableListOf()
-    val reducedARGBPaletteMapping: MutableMap<Int, Int> = mutableMapOf()
+    val reducedARGBBucketPalette: MutableList<Int> = mutableListOf()
     while (i < bucketSize*PALETTE_SIZE) { // bucketSize*paletteSize instead of pixelMax to throw away remainder pixels
-        println("i:  " + i + "/" + PIXEL_MAX)
-        println("bucketIndex: " + bucketIndex)
-        println()
 
         // If last bucket, add in the remainder pixels
         var bucket: List<Color>
@@ -208,7 +205,6 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
         } else {
             bucket = sortedPixels.toList().slice(i until (i + bucketSize))
         }
-        //val bucket = sortedPixels.toList().slice(i until (i + bucketSize))
 
         // average colors in the bucket
         val avg_red = (bucket.map { it.red() }.sum()) / bucket.size
@@ -216,34 +212,28 @@ fun convertBitmapMedianCut(bitmap: Bitmap): Bitmap {
         val avg_blue = (bucket.map { it.blue() }.sum()) / bucket.size
 
         val bucketColorAverage = Color.argb(1f, avg_red,avg_green,avg_blue)
-        reducedARGBPalette.add(bucketColorAverage)
-        //assert(sortedPixels[i].toArgb() in arrayListOfImageColors)
-        //if (sortedPixels[i].toArgb() == -16726090) {
-        //  print(1)
-        //}
-        val stopPoint = i + bucket.size
-        while (i < stopPoint) {
-            reducedARGBPaletteMapping[sortedPixels[i].toArgb()] = bucketColorAverage
-            i  += 1
-        }
+        reducedARGBBucketPalette.add(bucketColorAverage)
 
-        //reducedARGBPaletteMapping[sortedPixels[i].toArgb()] = bucketColorAverage
-
-        //i += bucketSize
-        bucketIndex += 1
+        i += bucket.size
     }
 
-    //assert(reducedARGBPalette.size == reducedARGBPalette.toSet().size) {
-    //  "ReducedARGBPalette size: ${reducedARGBPalette.size} \t reducedARGBPallete.toSet() size: ${reducedARGBPalette.toSet().size}" }
-    assert(reducedARGBPalette.size == PALETTE_SIZE)
+    assert(reducedARGBBucketPalette.size == PALETTE_SIZE)
 
-    val newPaletteBindings = paletteToACPalette(reducedARGBPalette)
-    //for (pixel in )
+    val newBucketPaletteBindings = paletteToACPalette(reducedARGBBucketPalette)
+    // Bindings for oldColor->acColor
+    val newBindings: HashMap<Int, Int> = hashMapOf()
+    for (oldColor in arrayListOfImageColors.distinct()) {
+        val colorDistances = HashMap<Int, Double>()
+        for (newPossibleColor in newBucketPaletteBindings.values.distinct()) {
+            val distance = getEuclideanSRGBDistance(oldColor.toColor(), newPossibleColor.toColor())
+            colorDistances[newPossibleColor] = distance
+            val sortedColorDistances = colorDistances.entries.sortedWith(compareBy { it.value })
+            newBindings[oldColor] = sortedColorDistances[0].key
+        }
+
+    }
     val recoloredImagePixels:  IntArray = arrayListOfImageColors.map {
-        //newPaletteBindings[it]!!
-        //newPaletteBindings[reducedARGBPaletteMapping[it]]!!
-        newPaletteBindings[reducedARGBPaletteMapping[it]!!]!!
-
+        newBindings[it]!!
     }.toList().toIntArray()
 
     val newBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
@@ -259,35 +249,29 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
     val acColors = AnimalCrossingQRObject.animalCrossingPalettePositionToColorMap.values
 
     val colorDistances = HashMap<Int, MutableList<MutableMap.MutableEntry<Int, Double>>>()
-    var c = 0
     for (old_color in palette) {
         println(colorDistances.size)
-        println("ooooo" + c.toString())
-        c += 1
         val acColorDistances = HashMap<Int, Double>()
         for (acColor in acColors) {
-            // TODO check if getEuclideanSRGBDistance() is correct (white is not white)
             val distance = getEuclideanSRGBDistance(old_color.toColor(), acColor.toColor())
             acColorDistances[acColor] = distance
         }
         val sortedacColorDistances = acColorDistances.entries.sortedWith(compareBy { it.value })
-        //assert(old_color !in colorDistances.keys)
         colorDistances[old_color] = sortedacColorDistances.toMutableList()
     }
-    println(colorDistances.size)
-    //assert(false)
+    val newColorBindings = HashMap<Int, Int>() //  <new_color, owner_color(original_color)>
+    for ((key, value) in colorDistances){
+        newColorBindings[key] = value[0].key
+    }
+    return newColorBindings // (reduceColorMapColor, newPaletteColor)
 
+    /* Save code for if 15 or fewer colors to create bindings for
     // Assign new palette transformation
     //val test: HashMap<Int, Int> // <Original_color, new_color>
     val versions = mutableListOf<HashMap<Int, Int>>()
-    val newColorBindings = HashMap<Int, Int>() //  <new_color, owner_color(original_color)>
+    //val newColorBindings = HashMap<Int, Int>() //  <new_color, owner_color(original_color)>
     var counter = -1
     fun setacColorToBinding(acColor_to_test: Int, currentOriginalColor: Int, level: String): Boolean {
-        /*
-
-         */
-        //println(colorDistances[currentOriginalColor]!![0].key)
-        //println(acColor_to_test)
         counter += 1
         println(level + "mmmmmmmmmmmmmmmmmmmmmmmmm" + counter.toString())
         println(level + "ATTEMPT BIND $acColor_to_test to $currentOriginalColor")
@@ -311,8 +295,6 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
                 return false
             } else {
                 // Handle the previously bound color
-                val t = 2
-
                 // old binding
                 val currentlyBoundOriginalColor_toHandle = newColorBindings[acColor_to_test]!!
                 // Try to set the new binding. should i do this earlier?
@@ -323,8 +305,6 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
                 colorDistances[currentlyBoundOriginalColor_toHandle]!!.removeFirst()
                 val testNewSize = colorDistances[currentlyBoundOriginalColor_toHandle]!!.size
                 assert(testNewSize == testOldSize-1)
-
-
 
                 //if (newColorBindings.containsKey(colorDistances[color_to_handle]!![0].key)) {
                 //}
@@ -341,9 +321,7 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
                 println(level + "SET REPLACE")
                 println(level + "BOUND " + colorDistances[currentlyBoundOriginalColor_toHandle]!![0].key.toString() + " to " + currentlyBoundOriginalColor_toHandle.toString())
                 return true
-
             }
-
         } else {
             //newColorBindings[acColor_to_test] = old_color
             newColorBindings[acColor_to_test] = currentOriginalColor
@@ -358,14 +336,6 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
     println(colorDistances.size)
     //assert(false)
     for (old_color in colorDistances.keys) {
-        //helper variable
-        //val sortedacColorDistances = colorDistances[old_color]!!
-
-        /*while (!setacColorToBinding(colorDistances[old_color]!![0].key, old_color, "---")){
-            //wtf colorDistances[colorDistances[old_color]!![0].key]!!.removeFirst()
-            println("REMOVE FIRST OUTER")
-            colorDistances[old_color]!!.removeFirst()
-        }*/
         val old_size = newColorBindings.size
         while (true) {
             val isSet = setacColorToBinding(colorDistances[old_color]!![0].key, old_color, "---")
@@ -379,13 +349,6 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
             }
         }
         assert(newColorBindings.size == old_size + 1)
-        //for (acColor in colorDistances[old_color]!!) { // change this into a for i in range type loop?
-        //    val colorIsSet = setacColorToBinding(acColor.key, old_color)
-        //    if (colorIsSet) {
-        //        break
-        //    }
-        //}
-
     }
 
     for (version in versions) {
@@ -396,4 +359,5 @@ fun paletteToACPalette(palette: List<Int>): Map<Int, Int> {
     //assert(newColorBindings.size == palette.size)
 
     return newColorBindings.entries.associate { (key, value) -> value to key }
+     */
 }

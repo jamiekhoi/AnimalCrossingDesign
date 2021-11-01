@@ -4,6 +4,7 @@
         <variable name="design" type="com.example.animalcrossingdesign.DesignDataClassSimple"/>
         <variable name="galleryViewModel" type="com.example.animalcrossingdesign.ui.gallery.GalleryViewModel"/>
     </data>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
